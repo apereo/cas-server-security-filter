@@ -1,9 +1,7 @@
+env: 
+  global: 
+    secure: cvPODbjkz8Ngaj+5pHmJh7tfzqOyYI7lbiSXj0lAWObBxd7Ns5U/csCLQhnn+HePPiuHA88V4Nt94df0q02li3L4PJeyA7bc4viqhkUP/XthtUaHzYYsum9SY2+1csffj0RvMubTHD1vZogIkl+razTOIV+msMgIqPymHJqapm0=
+script: mvn deploy
 language: java
-
-script: "mvn deploy"
-
-jdk:
-  - openjdk6
-
-env:
-  global:
+jdk: 
+- openjdk6
