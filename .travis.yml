@@ -1,0 +1,9 @@
+language: java
+
+script: "mvn deploy"
+
+jdk:
+  - openjdk6
+
+env:
+  global:
