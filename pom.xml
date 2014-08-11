@@ -30,7 +30,7 @@
   <packaging>jar</packaging>
   <name>CAS server security filter</name>
   <description>A security filter to protect the CAS server against HTTP attacks</description>
-  <version>1.0.0</version>
+  <version>1.0.1-SNAPSHOT</version>
   <url>http://www.jasig.org/cas</url>
   <inceptionYear>2014</inceptionYear>
 
@@ -87,7 +87,7 @@
     <connection>scm:git:git@github.com:Jasig/cas-server-security-filter.git</connection>
     <developerConnection>scm:git:git@github.com:Jasig/cas-server-security-filter.git</developerConnection>
     <url>https://github.com/Jasig/cas-server-security-filter</url>
-    <tag>cas-server-security-filter-1.0.0</tag>
+    <tag>HEAD</tag>
   </scm>	
 
   <dependencies>
