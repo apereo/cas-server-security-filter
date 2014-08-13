@@ -25,13 +25,12 @@ import java.util.Set;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This security filter is meant to be used within the CAS server, but could be used in other web applications.
@@ -46,10 +45,12 @@ import org.slf4j.LoggerFactory;
  */
 public class SecurityFilter implements Filter {
 
-    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private ServletContext context;
 
     @Override
     public void init(final FilterConfig filterConfig) throws ServletException {
+
+        this.context = filterConfig.getServletContext();
     }
 
     @Override
@@ -57,7 +58,8 @@ public class SecurityFilter implements Filter {
             throws IOException, ServletException {
 
         final HttpServletRequest httpRequest = (HttpServletRequest) request;
-        logger.debug("Call security filter for: {}", httpRequest.getRequestURI());
+
+        context.log("SecurityFilter is filtering " + httpRequest.getRequestURI());
         
         checkParameterOnlyAppearOnce(httpRequest);
 
@@ -75,7 +77,7 @@ public class SecurityFilter implements Filter {
                     if (values != null && values.length > 1) {
                         final String message = "'" + key + "' parameter appears more than once for url: "
                                 + request.getRequestURI();
-                        logger.error(message);
+                        context.log(message);
                         throw new IllegalArgumentException(message);
                     }
                 }
