@@ -28,6 +28,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -47,6 +49,10 @@ public final class SecurityFilterTests {
     private final static String[] SINGLE_VALUE = new String[] { "value" };
     private final static String[] MULTIPLE_VALUES = new String[] { "value2", "value2" };
     private final static String URL = "http://www.apereo.org";
+
+    private FilterConfig filterConfig;
+
+    private ServletContext servletContext;
     
     private HttpServletRequest request;
     
@@ -59,7 +65,12 @@ public final class SecurityFilterTests {
     private Map<String, String[]> parameters;
     
     @Before
-    public void setUp() {
+    public void setUp() throws ServletException {
+
+        servletContext = mock(ServletContext.class);
+        filterConfig = mock(FilterConfig.class);
+        when(filterConfig.getServletContext()).thenReturn(servletContext);
+
         request = mock(HttpServletRequest.class);
         parameters = new HashMap<String, String[]>();
         when(request.getParameterMap()).thenReturn(parameters);
@@ -67,6 +78,8 @@ public final class SecurityFilterTests {
         response = mock(HttpServletResponse.class);
         chain = mock(FilterChain.class);
         filter = new SecurityFilter();
+
+        filter.init(filterConfig);
     }
 
     /**
