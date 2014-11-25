@@ -88,7 +88,7 @@
     <developerConnection>scm:git:git@github.com:Jasig/cas-server-security-filter.git</developerConnection>
     <url>https://github.com/Jasig/cas-server-security-filter</url>
     <tag>HEAD</tag>
-  </scm>	
+  </scm>
 
   <dependencies>
     <dependency>
