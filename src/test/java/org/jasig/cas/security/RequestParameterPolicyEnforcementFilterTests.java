@@ -18,11 +18,15 @@
  */
 package org.jasig.cas.security;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.*;
 
 import org.junit.Before;
 import org.junit.Test;
+import sun.misc.Cache;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -187,6 +191,8 @@ public final class RequestParameterPolicyEnforcementFilterTests {
 
         final HttpServletRequest request = mock(HttpServletRequest.class);
         when(request.getParameterMap()).thenReturn(requestParameterMap);
+        when(request.getInputStream()).thenReturn(
+                new CachedServletInputStream(new ByteArrayOutputStream()));
 
         final HttpServletResponse response = mock(HttpServletResponse.class);
 
@@ -281,11 +287,14 @@ public final class RequestParameterPolicyEnforcementFilterTests {
         final Map<String, String[]> requestParameterMap = new HashMap<String, String[]>();
         // percent character is illicit by default, so, illicit character in this parameter value
         // but this parameter name is unchecked
-        requestParameterMap.put("uncheckedName", new String[] {"someValue%40gmail.com"});
+        requestParameterMap.put("uncheckedName", new String[]{"someValue%40gmail.com"});
 
         final HttpServletRequest request = mock(HttpServletRequest.class);
         when(request.getParameterMap()).thenReturn(requestParameterMap);
+        byte[] bytes = "sampleData".getBytes("UTF-8");
 
+        when(request.getInputStream()).thenReturn(
+                new CachedServletInputStream(new ByteArrayOutputStream()));
         final HttpServletResponse response = mock(HttpServletResponse.class);
 
         final FilterChain chain = mock(FilterChain.class);

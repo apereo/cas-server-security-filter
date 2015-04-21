@@ -177,11 +177,19 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
             throws IOException, ServletException {
 
         try {
+
             if (request instanceof HttpServletRequest) {
-                final HttpServletRequest httpServletRequest = (HttpServletRequest) request;
+                final HttpServletRequest receivedHttpServletRequest = (HttpServletRequest) request;
+
+                /*
+                Wrap the original request into a cache so request can be read multiple times.
+                Ask for the input stream next to actually invoke caching.
+                 */
+                final HttpServletRequest wrappedHttpServletRequest =
+                        new MultiReadHttpServletRequest(receivedHttpServletRequest);
 
                 // immutable map from String param name --> String[] parameter values
-                final Map parameterMap = httpServletRequest.getParameterMap();
+                final Map parameterMap = wrappedHttpServletRequest.getParameterMap();
 
                 // which parameters *on this request* ought to be checked.
                 final Set<String> parametersToCheckHere;
@@ -200,7 +208,7 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
                 enforceParameterContentCharacterRestrictions(parametersToCheckHere,
                         this.charactersToForbid, parameterMap);
 
-
+                chain.doFilter(wrappedHttpServletRequest, response);
             }
         } catch (final Exception e ) {
             // translate to a ServletException to meet the typed expectations of the Filter API.
