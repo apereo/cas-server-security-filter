@@ -1,8 +1,9 @@
+#!/bin/bash
 #
-# Licensed to Jasig under one or more contributor license
+# Licensed to Apereo under one or more contributor license
 # agreements. See the NOTICE file distributed with this work
 # for additional information regarding copyright ownership.
-# Jasig licenses this file to you under the Apache License,
+# Apereo licenses this file to you under the Apache License,
 # Version 2.0 (the "License"); you may not use this file
 # except in compliance with the License.  You may obtain a
 # copy of the License at the following location:
@@ -17,14 +18,8 @@
 # under the License.
 #
 
-script: mvn install
-env: 
-  global: 
-  - secure: ONCR2TafR1PfxI0bnHqQ1+aCZmOgJP0D6fQL7eNigRJGDXeoBjrLyrMwgrN+eY/cQ+P0e8o1tr95qcz4gIIKA1Wt2XD3K9rjUwM/QTQJzBfKxTbBxKqmS5MtFdAEV7ppXTbTv7aFVVOdX8AFnZWJA/9DRD+ljGQ6raboLsDXzII=
-  - secure: UUrC+Y5RohZqw3TruV3caxTMOv4HnqalonDv2H378hAV0C3w3/sm7gHcitp8TDJIPbhbVJE6IvhhHVoe3Tw2h7jQUMmONoNfDJjMdFDHDGNPOsdxZSwOXaErZv4DlDCUZlAU6qLg4pjqbGrkojK+LLGlGIPbDa1rhQ+6I1CmVPM=
-jdk: 
-- openjdk6
-language: java
-after_success:
-- chmod -R 777 ./travis/deploy-to-sonatype.sh
-- ./travis/deploy-to-sonatype.sh
+# Only invoke the deployment to Sonatype when it's not a PR and only for master
+if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]; then
+  mvn deploy --settings ./travis/settings.xml
+  echo -e "Successfully deployed SNAPSHOT artifacts to Sonatype under Travis job ${TRAVIS_JOB_NUMBER}"
+fi
