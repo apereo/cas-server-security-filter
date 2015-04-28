@@ -290,7 +290,7 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
         recognizedParameterNames.add(ALLOW_MULTI_VALUED_PARAMETERS);
         recognizedParameterNames.add(PARAMETERS_TO_CHECK);
         recognizedParameterNames.add(CHARACTERS_TO_FORBID);
-
+        recognizedParameterNames.add(LOGGER_HANDLER_CLASS_NAME);
 
         while (initParamNames.hasMoreElements()) {
             final String initParamName = (String) initParamNames.nextElement();
@@ -301,6 +301,15 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
                         + RequestParameterPolicyEnforcementFilter.class.getSimpleName() + " expects?"));
             }
         }
+    }
+
+    /**
+     * Returns the logger instance.
+     *
+     * @return Configured logger handler, or SLF4j handler, or JUL's default.
+     */
+    Logger getLogger () {
+        return LOGGER;
     }
 
     /**
@@ -525,15 +534,18 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
     }
 
     private static Handler loadLoggerHandlerByClassName(final String loggerHandlerClassName) throws Exception {
-        if (loggerHandlerClassName == null) {
-            return null;
-        }
+        try {
+            if (loggerHandlerClassName == null) {
+                return null;
+            }
 
-        final ClassLoader classLoader = RequestParameterPolicyEnforcementFilter.class.getClassLoader();
-
-        final Class loggerHandlerClass = classLoader.loadClass(loggerHandlerClassName);
-        if (loggerHandlerClass != null) {
-            return (Handler) loggerHandlerClass.newInstance();
+            final ClassLoader classLoader = RequestParameterPolicyEnforcementFilter.class.getClassLoader();
+            final Class loggerHandlerClass = classLoader.loadClass(loggerHandlerClassName);
+            if (loggerHandlerClass != null) {
+                return (Handler) loggerHandlerClass.newInstance();
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.FINE, e.getMessage(), e);
         }
         return null;
     }

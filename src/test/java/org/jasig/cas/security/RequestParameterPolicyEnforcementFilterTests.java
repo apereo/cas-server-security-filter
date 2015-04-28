@@ -23,6 +23,7 @@ import java.util.*;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -57,9 +58,9 @@ public final class RequestParameterPolicyEnforcementFilterTests {
 
     /**
      * Test that the Filter throws on init when unrecognized Filter init-param.
-     * @throws ServletException on test success.
+     * @throws RuntimeException on test success.
      */
-    @Test(expected = ServletException.class)
+    @Test(expected = RuntimeException.class)
     public void testUnrecognizedInitParamFailsFilterInit() throws ServletException {
 
         final Set<String> initParameterNames = new HashSet<String>();
@@ -77,7 +78,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
      * Test that if you configure the filter to forbid no characters and also to allow multi-valued parameters,
      * filter init fails because the filter would be a no-op.
      */
-    @Test(expected = ServletException.class)
+    @Test(expected = RuntimeException.class)
     public void testNoOpConfigurationFailsFilterInit() throws ServletException {
         final RequestParameterPolicyEnforcementFilter filter = new RequestParameterPolicyEnforcementFilter();
 
@@ -97,16 +98,38 @@ public final class RequestParameterPolicyEnforcementFilterTests {
                 .thenReturn(null);
 
         filter.init(filterConfig);
+    }
 
+    @Test
+    public void configureSlf4jLogging() throws ServletException {
+        final RequestParameterPolicyEnforcementFilter filter = new RequestParameterPolicyEnforcementFilter();
 
+        // mock up filter config.
+        final Set<String> initParameterNames = new HashSet<String>();
 
+        initParameterNames.add(RequestParameterPolicyEnforcementFilter.CHARACTERS_TO_FORBID);
+        initParameterNames.add(RequestParameterPolicyEnforcementFilter.LOGGER_HANDLER_CLASS_NAME);
+        final Enumeration parameterNamesEnumeration = Collections.enumeration(initParameterNames);
+        final FilterConfig filterConfig = mock(FilterConfig.class);
+        when(filterConfig.getInitParameterNames()).thenReturn(parameterNamesEnumeration);
+
+        when(filterConfig.getInitParameter(RequestParameterPolicyEnforcementFilter.CHARACTERS_TO_FORBID))
+                .thenReturn("none");
+        when(filterConfig.getInitParameter(RequestParameterPolicyEnforcementFilter.PARAMETERS_TO_CHECK))
+                .thenReturn(null);
+        when(filterConfig.getInitParameter(RequestParameterPolicyEnforcementFilter.LOGGER_HANDLER_CLASS_NAME))
+                .thenReturn(SLF4JBridgeHandler.class.getCanonicalName());
+
+        filter.init(filterConfig);
+        assertTrue(filter.getLogger().getHandlers().length > 0);
+        assertTrue(filter.getLogger().getHandlers()[0] instanceof SLF4JBridgeHandler);
     }
 
     /**
      * Test that, in the default configuration, when presented with a multi-valued parameter that configured to check
      * and configured to require not multi valued, rejects request.
      */
-    @Test(expected  = ServletException.class)
+    @Test(expected  = RuntimeException.class)
     public void testRejectsMultiValuedRequestParameter() throws IOException, ServletException {
 
         final RequestParameterPolicyEnforcementFilter filter = new RequestParameterPolicyEnforcementFilter();
@@ -202,7 +225,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
      * @throws IOException
      * @throws ServletException
      */
-    @Test(expected = ServletException.class)
+    @Test(expected = RuntimeException.class)
     public void testRejectsRequestWithIllicitCharacterInCheckedParameter() throws IOException, ServletException {
 
         final RequestParameterPolicyEnforcementFilter filter = new RequestParameterPolicyEnforcementFilter();
@@ -319,9 +342,9 @@ public final class RequestParameterPolicyEnforcementFilterTests {
 
     /**
      * Test that the method checking for unrecognized parameters throws on an unrecognized parameter.
-     * @throws ServletException on test success
+     * @throws RuntimeException on test success
      */
-    @Test(expected = ServletException.class)
+    @Test(expected = RuntimeException.class)
     public void testRejectsUnExpectedParameterName() throws ServletException {
 
         final Set<String> parameterNames = new HashSet<String>();
@@ -536,7 +559,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
     /**
      * Test that enforcing no-multi-value detects multi-valued parameter and throws.
      */
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = RuntimeException.class)
     public void testRequireNotMultiValueBlocksMultiValue() {
 
         final Set<String> parametersToCheck = new HashSet<String>();
