@@ -17,6 +17,9 @@
 # under the License.
 #
 
+before_install:
+- mvn -v
+- java -version
 script: mvn install
 env: 
   global: 
