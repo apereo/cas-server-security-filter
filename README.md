@@ -53,15 +53,17 @@ Configuration Examples
 
 ### The default configuration
 
-    <filter>
-      <filter-name>requestParameterFilter</filter-name>
-      <filter-class>org.jasig.cas.security.RequestParameterPolicyEnforcementFilter</filter-class>
-    </filter>
-    ...
-    <filter-mapping>
-      <filter-name>requestParameterFilter</filter-name>
-      <url-pattern>/*</url-pattern>
-    </filter-mapping>
+```xml
+<filter>
+  <filter-name>requestParameterFilter</filter-name>
+  <filter-class>org.jasig.cas.security.RequestParameterPolicyEnforcementFilter</filter-class>
+</filter>
+...
+<filter-mapping>
+  <filter-name>requestParameterFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+</filter-mapping>
+```
 
 In this configuration, the Filter will scrutinize all request parameters, requiring that they not be multi-valued, and requiring that they not contain any of `% ? # &`.
 
@@ -71,83 +73,88 @@ Multi-valued parameters are essential for supporting forms with multi-choice sel
 
 So, if you want to scrutinize the characters in all parameters, you might have to relax the requirement that those parameters not be multi-valued.
 
-    <filter>
-      <filter-name>requestParameterFilter</filter-name>
-      <filter-class>org.jasig.cas.security.RequestParameterPolicyEnforcementFilter</filter-class>
-      <init-param>
-        <param-name>allowMultiValuedParameters</param-name>
-        <param-value>true</param-value>
-      </init-param>
-    </filter>
-    ...
-    <filter-mapping>
-      <filter-name>requestParameterFilter</filter-name>
-      <url-pattern>/*</url-pattern>
-    </filter-mapping>
-    
+```xml
+<filter>
+  <filter-name>requestParameterFilter</filter-name>
+  <filter-class>org.jasig.cas.security.RequestParameterPolicyEnforcementFilter</filter-class>
+  <init-param>
+    <param-name>allowMultiValuedParameters</param-name>
+    <param-value>true</param-value>
+  </init-param>
+</filter>
+...
+<filter-mapping>
+  <filter-name>requestParameterFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+</filter-mapping>
+ ```
+ 
 ### Restrictions suitable for fronting a CAS Client
 
 If you're using this Filter for protection in front of a CAS client library usage, you might want to tighten it down to just checking the request parameters involved in the CAS protocol.
 
-    <filter>
-      <filter-name>requestParameterFilter</filter-name>
-      <filter-class>org.jasig.cas.security.RequestParameterPolicyEnforcementFilter</filter-class>
-      <init-param>
-        <param-name>parametersToCheck</param-name>
-        <param-value>ticket SAMLArt pgtIou pgtId</param-value>
-      </init-param>
-    </filter>
-    ...
-    <filter-mapping>
-      <filter-name>requestParameterFilter</filter-name>
-      <url-pattern>/*</url-pattern>
-    </filter-mapping>
-
+```xml
+<filter>
+  <filter-name>requestParameterFilter</filter-name>
+  <filter-class>org.jasig.cas.security.RequestParameterPolicyEnforcementFilter</filter-class>
+  <init-param>
+    <param-name>parametersToCheck</param-name>
+    <param-value>ticket SAMLArt pgtIou pgtId</param-value>
+  </init-param>
+</filter>
+...
+<filter-mapping>
+  <filter-name>requestParameterFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+</filter-mapping>
+```
 
 ### Restrictions suitable for fronting a CAS Server
 
 Likewise, you could use this Filter in front of a CAS Server to prevent unexpected multi-valued submissions of CAS protocol parameters.
 
-    <filter>
-      <filter-name>requestParameterFilter</filter-name>
-      <filter-class>org.jasig.cas.security.RequestParameterPolicyEnforcementFilter</filter-class>
-      <init-param>
-        <param-name>parametersToCheck</param-name>
-        <param-value>ticket SAMLArt service renew gateway warn logoutUrl pgtUrl</param-value>
-      </init-param>
-      <init-param>
-        <param-name>charactersToForbid</param-name>
-        <param-value>none</param-value>
-      </init-param>
-    </filter>
-    ...
-    <filter-mapping>
-      <filter-name>requestParameterFilter</filter-name>
-      <url-pattern>/*</url-pattern>
-    </filter-mapping>
-    
+```xml
+<filter>
+  <filter-name>requestParameterFilter</filter-name>
+  <filter-class>org.jasig.cas.security.RequestParameterPolicyEnforcementFilter</filter-class>
+  <init-param>
+    <param-name>parametersToCheck</param-name>
+    <param-value>ticket SAMLArt service renew gateway warn logoutUrl pgtUrl</param-value>
+  </init-param>
+  <init-param>
+    <param-name>charactersToForbid</param-name>
+    <param-value>none</param-value>
+  </init-param>
+</filter>
+...
+<filter-mapping>
+  <filter-name>requestParameterFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+</filter-mapping>
+```
+
 This approach has the advantage of only blocking specific CAS protocol parameters, so that if you were to map the Filter in front of say the services management UI you can block unexpectedly multi-valued CAS protocol parameters without blocking submission of the services management edit screen where multiple user attributes are selected for release to a service (a legitimate case of a multi-valued attribute).
 
 ### An entirely novel configuration
 
 So, a neat thing about this Filter is that it has nothing to do with CAS and it has no dependencies at all other than the Servlet API, so on that fateful day when you discover that some Java web application has some problem involving illicit submissions of the semicolon character in a request parameter named `query`, you can plop this Filter in front of it and get back to safety.  Doing so will almost certainly just work, since this Filter has no external dependencies whatsoever except on the Servlet API that had to be present for that Web Application to be a Java web app anyway.
  
-
-     <filter>
-       <filter-name>requestParameterFilter</filter-name>
-       <filter-class>org.jasig.cas.security.RequestParameterPolicyEnforcementFilter</filter-class>
-       <init-param>
-         <param-name>parametersToCheck</param-name>
-         <param-value>query</param-value>
-       </init-param>
-       <init-param>
-         <param-name>charactersToForbid</param-name>
-         <param-value>;</param-value>
-       </init-param>
-     </filter>
-     ...
-     <filter-mapping>
-       <filter-name>requestParameterFilter</filter-name>
-       <url-pattern>/*</url-pattern>
-     </filter-mapping>
-
+```xml
+ <filter>
+   <filter-name>requestParameterFilter</filter-name>
+   <filter-class>org.jasig.cas.security.RequestParameterPolicyEnforcementFilter</filter-class>
+   <init-param>
+     <param-name>parametersToCheck</param-name>
+     <param-value>query</param-value>
+   </init-param>
+   <init-param>
+     <param-name>charactersToForbid</param-name>
+     <param-value>;</param-value>
+   </init-param>
+ </filter>
+ ...
+ <filter-mapping>
+   <filter-name>requestParameterFilter</filter-name>
+   <url-pattern>/*</url-pattern>
+ </filter-mapping>
+```
