@@ -21,7 +21,6 @@ package org.jasig.cas.security;
 import java.io.IOException;
 import java.util.*;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
@@ -407,7 +406,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
 
 
     /* ========================================================================================================== */
-    /* Tests for parseParametersToCheck().
+    /* Tests for parseParametersList().
      * Ensure that the Filter properly understands which parameters it ought to be checking.
      */
 
@@ -417,7 +416,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
     @Test
     public void testParsesNullToEmptySet() {
 
-        final Set<String> returnedSet  = RequestParameterPolicyEnforcementFilter.parseParametersToCheck(null);
+        final Set<String> returnedSet  = RequestParameterPolicyEnforcementFilter.parseParametersList(null, true);
 
         assertTrue(returnedSet.isEmpty());
 
@@ -436,7 +435,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
         expectedSet.add("renew");
         expectedSet.add("gateway");
 
-        final Set<String> returnedSet = RequestParameterPolicyEnforcementFilter.parseParametersToCheck(parameterValue);
+        final Set<String> returnedSet = RequestParameterPolicyEnforcementFilter.parseParametersList(parameterValue, true);
 
         assertEquals(expectedSet, returnedSet);
     }
@@ -447,7 +446,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
     @Test(expected = Exception.class)
     public void testParsingBlankParametersToCheckThrowsException() {
 
-        RequestParameterPolicyEnforcementFilter.parseParametersToCheck("   ");
+        RequestParameterPolicyEnforcementFilter.parseParametersList("   ", true);
 
     }
 
@@ -455,13 +454,23 @@ public final class RequestParameterPolicyEnforcementFilterTests {
      * Test the special parsing behavior of star parses to empty Set.
      */
     @Test
-    public void testAsteriskParsesToEmptySetOfParametersToCheck() {
+    public void testAsteriskParsesIfAllowedToEmptySetOfParametersToCheck() {
 
         final Set<String> expectedSet = new HashSet<String>();
 
-        final Set<String> returnedSet = RequestParameterPolicyEnforcementFilter.parseParametersToCheck("*");
+        final Set<String> returnedSet = RequestParameterPolicyEnforcementFilter.parseParametersList("*", true);
 
         assertEquals(expectedSet, returnedSet);
+
+    }
+
+    /**
+     * Test that the star token if not allowed yields exception.
+     */
+    @Test(expected = Exception.class)
+    public void testAsteriskParseIfNotAllowedThrowsException() {
+
+        RequestParameterPolicyEnforcementFilter.parseParametersList("*", false);
 
     }
 
@@ -471,7 +480,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
     @Test(expected = Exception.class)
     public void testParsingAsteriskWithOtherTokensThrowsException() {
 
-        RequestParameterPolicyEnforcementFilter.parseParametersToCheck("renew * gateway");
+        RequestParameterPolicyEnforcementFilter.parseParametersList("renew * gateway", true);
 
     }
 
@@ -751,4 +760,31 @@ public final class RequestParameterPolicyEnforcementFilterTests {
 
     }
 
+    /**
+     * Check that parameters only allowed in POST requests do not generate exception in a POST request.
+     */
+    @Test
+    public void testOnlyPostParameterInPostRequest() {
+        internalTestOnlyPostParameter("POST");
+    }
+
+    /**
+     * Check that parameters only allowed in POST requests generate exception in a GET request.
+     */
+    @Test(expected = Exception.class)
+    public void testOnlyPostParameterInGetRequest() {
+        internalTestOnlyPostParameter("GET");
+    }
+
+    private void internalTestOnlyPostParameter(final String method) {
+
+        final Set<String> onlyPostParameters = new HashSet<String>();
+        onlyPostParameters.add("username");
+        onlyPostParameters.add("password");
+
+        final Map<String, String[]> parameterMap = new HashMap<String, String[]>();
+        parameterMap.put("username", new String[] {"jle"});
+
+        RequestParameterPolicyEnforcementFilter.checkOnlyPostParameters(method, parameterMap, onlyPostParameters);
+    }
 }

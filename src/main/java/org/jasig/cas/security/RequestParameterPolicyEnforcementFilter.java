@@ -21,7 +21,6 @@ package org.jasig.cas.security;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
-import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -122,6 +121,11 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
     public static final String LOGGER_HANDLER_CLASS_NAME = "loggerHandlerClassName";
 
     /**
+     * The name of the optional Filter init-param specifying what request parameters ought to be send via POST requests only.
+     */
+    public static final String ONLY_POST_PARAMETERS = "onlyPostParameters";
+
+    /**
      * Set of parameter names to check.
      * Empty set represents special behavior of checking all parameters.
      */
@@ -138,6 +142,10 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
      */
     private boolean allowMultiValueParameters = false;
 
+    /**
+     * Set of parameters which should be only received via POST requests.
+     */
+    private Set<String> onlyPostParameters;
 
     /* ========================================================================================================== */
     /* Filter methods */
@@ -155,6 +163,7 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
 
         final String initParamAllowMultiValuedParameters = filterConfig.getInitParameter(ALLOW_MULTI_VALUED_PARAMETERS);
         final String initParamParametersToCheck = filterConfig.getInitParameter(PARAMETERS_TO_CHECK);
+        final String initParamOnlyPostParameters = filterConfig.getInitParameter(ONLY_POST_PARAMETERS);
         final String initParamCharactersToForbid = filterConfig.getInitParameter(CHARACTERS_TO_FORBID);
 
         try {
@@ -165,10 +174,16 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
         }
 
         try {
-            this.parametersToCheck = parseParametersToCheck(initParamParametersToCheck);
+            this.parametersToCheck = parseParametersList(initParamParametersToCheck, true);
         } catch (final Exception e) {
             logExceptionAndThrow(new ServletException("Error parsing request parameter " + PARAMETERS_TO_CHECK + " with value ["
                     + initParamParametersToCheck + "]", e));
+        }
+        try {
+            this.onlyPostParameters = parseParametersList(initParamOnlyPostParameters, false);
+        } catch (final Exception e) {
+            logExceptionAndThrow(new ServletException("Error parsing request parameter " + ONLY_POST_PARAMETERS + " with value ["
+                    + initParamOnlyPostParameters + "]", e));
         }
 
         try {
@@ -254,7 +269,7 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
                 enforceParameterContentCharacterRestrictions(parametersToCheckHere,
                         this.charactersToForbid, parameterMap);
 
-
+                checkOnlyPostParameters(httpServletRequest.getMethod(), parameterMap, this.onlyPostParameters);
             }
         } catch (final Exception e ) {
             // translate to a ServletException to meet the typed expectations of the Filter API.
@@ -289,6 +304,7 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
         final Set<String> recognizedParameterNames = new HashSet<String>();
         recognizedParameterNames.add(ALLOW_MULTI_VALUED_PARAMETERS);
         recognizedParameterNames.add(PARAMETERS_TO_CHECK);
+        recognizedParameterNames.add(ONLY_POST_PARAMETERS);
         recognizedParameterNames.add(CHARACTERS_TO_FORBID);
         recognizedParameterNames.add(LOGGER_HANDLER_CLASS_NAME);
 
@@ -361,11 +377,12 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
      * This method is only non-private to allow JUnit testing.
      *
      * @param initParamValue null, or a non-blank whitespace delimited list of parameters to check
+     * @param allowWildcard whether a wildcard is allowed instead of the parameters list
      * @return a Set of String names of parameters to check, or an empty set representing check-them-all.
      *
      * @throws IllegalArgumentException when the init param value is out of spec
      */
-    static Set<String> parseParametersToCheck(final String initParamValue) {
+    static Set<String> parseParametersList(final String initParamValue, final boolean allowWildcard) {
 
         final Set<String> parameterNames = new HashSet<String>();
 
@@ -380,7 +397,7 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
                     "] had no tokens but should have had at least one token."));
         }
 
-        if (1 == tokens.length && "*".equals(tokens[0])) {
+        if (1 == tokens.length && "*".equals(tokens[0]) && allowWildcard) {
             return parameterNames;
         }
 
@@ -526,6 +543,24 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
 
         // none of the values of any of the parametersToCheck had a forbidden character
         // hurray! allow flow to continue without throwing an Exception.
+    }
+
+    /**
+     * Check that some parameters should only be in POST requests (according to the configuration).
+     *
+     * @param method the method of the request
+     * @param parameterMap all the request parameters
+     * @param onlyPostParameters parameters that should only be in POST requests
+     */
+    static void checkOnlyPostParameters(final String method, final Map parameterMap, final Set<String> onlyPostParameters) {
+        if (!"POST".equals(method)) {
+            Set<String> names = parameterMap.keySet();
+            for (String onlyPostParameter : onlyPostParameters) {
+                if (names.contains(onlyPostParameter)) {
+                    logExceptionAndThrow(new IllegalArgumentException(onlyPostParameter + " parameter should only be used in POST requests"));
+                }
+            }
+        }
     }
 
     private static void logExceptionAndThrow(final Exception ex) {
