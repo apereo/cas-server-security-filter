@@ -1,4 +1,4 @@
-CAS security filters
+CAS security filter [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.jasig.cas/cas-server-security-filter/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/org.jasig.cas/cas-server-security-filter)
 ====================
 
 
