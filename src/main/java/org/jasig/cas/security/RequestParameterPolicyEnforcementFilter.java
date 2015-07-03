@@ -150,6 +150,22 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
     /* ========================================================================================================== */
     /* Filter methods */
 
+    public void setParametersToCheck(Set<String> parametersToCheck) {
+        this.parametersToCheck = parametersToCheck;
+    }
+
+    public void setCharactersToForbid(Set<Character> charactersToForbid) {
+        this.charactersToForbid = charactersToForbid;
+    }
+
+    public void setAllowMultiValueParameters(boolean allowMultiValueParameters) {
+        this.allowMultiValueParameters = allowMultiValueParameters;
+    }
+
+    public void setOnlyPostParameters(Set<String> onlyPostParameters) {
+        this.onlyPostParameters = onlyPostParameters;
+    }
+
     @Override
     public void init(final FilterConfig filterConfig) throws ServletException {
 
