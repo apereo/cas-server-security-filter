@@ -107,7 +107,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
         final Set<String> initParameterNames = new HashSet<String>();
 
         initParameterNames.add(RequestParameterPolicyEnforcementFilter.CHARACTERS_TO_FORBID);
-        initParameterNames.add(RequestParameterPolicyEnforcementFilter.LOGGER_HANDLER_CLASS_NAME);
+        initParameterNames.add(FilterUtils.LOGGER_HANDLER_CLASS_NAME);
         final Enumeration parameterNamesEnumeration = Collections.enumeration(initParameterNames);
         final FilterConfig filterConfig = mock(FilterConfig.class);
         when(filterConfig.getInitParameterNames()).thenReturn(parameterNamesEnumeration);
@@ -116,7 +116,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
                 .thenReturn("none");
         when(filterConfig.getInitParameter(RequestParameterPolicyEnforcementFilter.PARAMETERS_TO_CHECK))
                 .thenReturn(null);
-        when(filterConfig.getInitParameter(RequestParameterPolicyEnforcementFilter.LOGGER_HANDLER_CLASS_NAME))
+        when(filterConfig.getInitParameter(FilterUtils.LOGGER_HANDLER_CLASS_NAME))
                 .thenReturn(SLF4JBridgeHandler.class.getCanonicalName());
 
         filter.init(filterConfig);
@@ -370,7 +370,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
     @Test
     public void testParsesTrueToTrue() {
 
-        assertTrue(RequestParameterPolicyEnforcementFilter.parseStringToBooleanDefaultingToFalse("true"));
+        assertTrue(FilterUtils.parseStringToBooleanDefaultingToFalse("true"));
 
     }
 
@@ -380,7 +380,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
     @Test
     public void testParsesFalseToFalse() {
 
-        assertFalse(RequestParameterPolicyEnforcementFilter.parseStringToBooleanDefaultingToFalse("false"));
+        assertFalse(FilterUtils.parseStringToBooleanDefaultingToFalse("false"));
 
     }
 
@@ -390,7 +390,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
     @Test
     public void testParsesNullToFalse() {
 
-        assertFalse(RequestParameterPolicyEnforcementFilter.parseStringToBooleanDefaultingToFalse(null));
+        assertFalse(FilterUtils.parseStringToBooleanDefaultingToFalse(null));
 
     }
 
@@ -400,7 +400,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
     @Test(expected = Exception.class)
     public void testParsingMaybeYieldsException() {
 
-        RequestParameterPolicyEnforcementFilter.parseStringToBooleanDefaultingToFalse("maybe");
+        FilterUtils.parseStringToBooleanDefaultingToFalse("maybe");
 
     }
 

@@ -31,11 +31,6 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Formatter;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 /**
@@ -88,7 +83,7 @@ import java.util.logging.Logger;
  */
 public final class RequestParameterPolicyEnforcementFilter implements Filter {
 
-    private final static Logger LOGGER = Logger.getLogger(RequestParameterPolicyEnforcementFilter.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(RequestParameterPolicyEnforcementFilter.class.getName());
 
     /**
      * The set of Characters blocked by default on checked parameters.
@@ -115,10 +110,6 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
      */
     public static final String ALLOW_MULTI_VALUED_PARAMETERS = "allowMultiValuedParameters";
 
-    /** Descibes the handler that should be used for logging. If none is defined
-     * the filter will switch to a {@link java.util.logging.ConsoleHandler}.
-     */
-    public static final String LOGGER_HANDLER_CLASS_NAME = "loggerHandlerClassName";
 
     /**
      * The name of the optional Filter init-param specifying what request parameters ought to be send via POST requests only.
@@ -169,7 +160,7 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
     @Override
     public void init(final FilterConfig filterConfig) throws ServletException {
 
-        configureLogging(filterConfig);
+        FilterUtils.configureLogging(filterConfig, LOGGER);
 
         // verify there are no init parameters configured that are not recognized
         // since an unrecognized init param might be the adopter trying to configure this filter in an important way
@@ -183,78 +174,41 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
         final String initParamCharactersToForbid = filterConfig.getInitParameter(CHARACTERS_TO_FORBID);
 
         try {
-            this.allowMultiValueParameters = parseStringToBooleanDefaultingToFalse(initParamAllowMultiValuedParameters);
+            this.allowMultiValueParameters = FilterUtils.parseStringToBooleanDefaultingToFalse(initParamAllowMultiValuedParameters);
         } catch (final Exception e) {
-            logExceptionAndThrow(new ServletException("Error parsing request parameter [" + ALLOW_MULTI_VALUED_PARAMETERS
+            FilterUtils.logExceptionAndThrow(new ServletException("Error parsing request parameter [" + ALLOW_MULTI_VALUED_PARAMETERS
                     + "] with value [" + initParamAllowMultiValuedParameters + "]", e));
         }
 
         try {
             this.parametersToCheck = parseParametersList(initParamParametersToCheck, true);
         } catch (final Exception e) {
-            logExceptionAndThrow(new ServletException("Error parsing request parameter " + PARAMETERS_TO_CHECK + " with value ["
+            FilterUtils.logExceptionAndThrow(new ServletException("Error parsing request parameter " + PARAMETERS_TO_CHECK + " with value ["
                     + initParamParametersToCheck + "]", e));
         }
         try {
             this.onlyPostParameters = parseParametersList(initParamOnlyPostParameters, false);
         } catch (final Exception e) {
-            logExceptionAndThrow(new ServletException("Error parsing request parameter " + ONLY_POST_PARAMETERS + " with value ["
+            FilterUtils.logExceptionAndThrow(new ServletException("Error parsing request parameter " + ONLY_POST_PARAMETERS + " with value ["
                     + initParamOnlyPostParameters + "]", e));
         }
 
         try {
             this.charactersToForbid = parseCharactersToForbid(initParamCharactersToForbid);
         } catch (final Exception e) {
-            logExceptionAndThrow(new ServletException("Error parsing request parameter " + CHARACTERS_TO_FORBID + " with value [" +
+            FilterUtils.logExceptionAndThrow(new ServletException("Error parsing request parameter " + CHARACTERS_TO_FORBID + " with value [" +
                     initParamCharactersToForbid + "]", e));
         }
 
         if (this.allowMultiValueParameters && this.charactersToForbid.isEmpty()) {
-            logExceptionAndThrow(new ServletException("Configuration to allow multi-value parameters and forbid no characters makes "
+            FilterUtils.logExceptionAndThrow(new ServletException("Configuration to allow multi-value parameters and forbid no characters makes "
                     + getClass().getSimpleName() + " a no-op, which is probably not what you want, " +
                     "so failing Filter init."));
         }
 
     }
 
-    private void configureLogging(final FilterConfig filterConfig) throws ServletException {
-        for (final Handler handler : LOGGER.getHandlers()) {
-            LOGGER.removeHandler(handler);
-        }
-        LOGGER.setUseParentHandlers(false);
 
-        try {
-            final String loggerHandlerClassName = filterConfig.getInitParameter(LOGGER_HANDLER_CLASS_NAME);
-            Handler handler = loadLoggerHandlerByClassName(loggerHandlerClassName);
-            if (handler == null) {
-                handler = loadLoggerHandlerByClassName("org.slf4j.bridge.SLF4JBridgeHandler");
-            }
-
-            if (handler == null) {
-                handler = new ConsoleHandler();
-                handler.setFormatter(new Formatter() {
-                    @Override
-                    public String format(final LogRecord record) {
-                        final StringBuffer sb = new StringBuffer();
-
-                        sb.append("[");
-                        sb.append(record.getLevel().getName());
-                        sb.append("]\t");
-
-                        sb.append(formatMessage(record));
-                        sb.append("\n");
-
-                        return sb.toString();
-                    }
-                });
-                LOGGER.addHandler(handler);
-            } else {
-                LOGGER.addHandler(handler);
-            }
-        } catch (final Exception e) {
-             throw new ServletException("Could not identify the logging framework per the configuration specified.");
-        }
-    }
 
 
     @Override
@@ -289,7 +243,7 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
             }
         } catch (final Exception e ) {
             // translate to a ServletException to meet the typed expectations of the Filter API.
-            logExceptionAndThrow(new ServletException(getClass().getSimpleName() + " is blocking this request.  Examine the cause in" +
+            FilterUtils.logExceptionAndThrow(new ServletException(getClass().getSimpleName() + " is blocking this request.  Examine the cause in" +
                     " this stack trace to understand why.", e));
         }
 
@@ -322,12 +276,12 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
         recognizedParameterNames.add(PARAMETERS_TO_CHECK);
         recognizedParameterNames.add(ONLY_POST_PARAMETERS);
         recognizedParameterNames.add(CHARACTERS_TO_FORBID);
-        recognizedParameterNames.add(LOGGER_HANDLER_CLASS_NAME);
+        recognizedParameterNames.add(FilterUtils.LOGGER_HANDLER_CLASS_NAME);
 
         while (initParamNames.hasMoreElements()) {
             final String initParamName = (String) initParamNames.nextElement();
             if (! recognizedParameterNames.contains(initParamName)) {
-                logExceptionAndThrow(new ServletException("Unrecognized init parameter [" + initParamName + "].  Failing safe.  Typo" +
+                FilterUtils.logExceptionAndThrow(new ServletException("Unrecognized init parameter [" + initParamName + "].  Failing safe.  Typo" +
                         " in the web.xml configuration? " +
                         " Misunderstanding about the configuration "
                         + RequestParameterPolicyEnforcementFilter.class.getSimpleName() + " expects?"));
@@ -344,37 +298,7 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
         return LOGGER;
     }
 
-    /**
-     * Parse a String to a boolean.
-     *
-     * "true" --> true
-     * "false" --> false
-     * null --> false
-     * Anything else --> logExceptionAndThrow(IllegalArgumentException.
-     *
-     * This is a stateless static method.
-     *
-     * This method is an implementation detail and is not exposed API.
-     * This method is only non-private to allow JUnit testing.
-     *
-     * @param stringToParse a String to parse to a boolean as specified
-     * @return true or false
-     * @throws IllegalArgumentException if the String is not true, false, or null.
-     */
-    static boolean parseStringToBooleanDefaultingToFalse(final String stringToParse) {
 
-        if ("true".equals(stringToParse)) {
-            return true;
-        } else if ("false".equals(stringToParse)) {
-            return false;
-        } else if (null == stringToParse) {
-            return false;
-        }
-
-        logExceptionAndThrow(new IllegalArgumentException("String [" + stringToParse +
-                "] could not parse to a boolean because it was not precisely 'true' or 'false'."));
-        return false;
-    }
 
 
     /**
@@ -409,7 +333,7 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
         final String[] tokens = initParamValue.split("\\s+");
 
         if ( 0 == tokens.length) {
-            logExceptionAndThrow(new IllegalArgumentException("[" + initParamValue +
+            FilterUtils.logExceptionAndThrow(new IllegalArgumentException("[" + initParamValue +
                     "] had no tokens but should have had at least one token."));
         }
 
@@ -420,7 +344,7 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
         for (final String parameterName : tokens) {
 
             if ("*".equals(parameterName)) {
-                logExceptionAndThrow(new IllegalArgumentException("Star token encountered among other tokens in parsing [" + initParamValue + "]"));
+                FilterUtils.logExceptionAndThrow(new IllegalArgumentException("Star token encountered among other tokens in parsing [" + initParamValue + "]"));
             }
 
             parameterNames.add(parameterName);
@@ -454,14 +378,14 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
         final String[] tokens = paramValue.split("\\s+");
 
         if (0 == tokens.length) {
-            logExceptionAndThrow(new IllegalArgumentException("Expected tokens when parsing [" + paramValue + "] but found no tokens."
+            FilterUtils.logExceptionAndThrow(new IllegalArgumentException("Expected tokens when parsing [" + paramValue + "] but found no tokens."
                     + " If you really want to configure no characters, use the magic value 'none'."));
         }
 
         for (final String token : tokens) {
 
             if (token.length() > 1) {
-                logExceptionAndThrow(new IllegalArgumentException("Expected tokens of length 1 but found [" + token + "] when " +
+                FilterUtils.logExceptionAndThrow(new IllegalArgumentException("Expected tokens of length 1 but found [" + token + "] when " +
                         "parsing [" + paramValue + "]"));
             }
 
@@ -498,7 +422,7 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
             if (parameterMap.containsKey(parameterName)) {
                 final String[] values = (String[]) parameterMap.get(parameterName);
                 if ( values.length > 1 ) {
-                    logExceptionAndThrow(new IllegalStateException("Parameter [" + parameterName + "] had multiple values [" +
+                    FilterUtils.logExceptionAndThrow(new IllegalStateException("Parameter [" + parameterName + "] had multiple values [" +
                             Arrays.toString(values) + "] but at most one value is allowable."));
                 }
             }
@@ -541,7 +465,7 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
                         characterAsStringBuilder.append(forbiddenCharacter);
 
                         if (parameterValue.contains(characterAsStringBuilder)) {
-                            logExceptionAndThrow(new IllegalArgumentException("Disallowed character [" + forbiddenCharacter
+                            FilterUtils.logExceptionAndThrow(new IllegalArgumentException("Disallowed character [" + forbiddenCharacter
                                     + "] found in value [" + parameterValue + "] of parameter named ["
                                     + parameterToCheck + "]"));
                         }
@@ -573,31 +497,12 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
             Set<String> names = parameterMap.keySet();
             for (String onlyPostParameter : onlyPostParameters) {
                 if (names.contains(onlyPostParameter)) {
-                    logExceptionAndThrow(new IllegalArgumentException(onlyPostParameter + " parameter should only be used in POST requests"));
+                    FilterUtils.logExceptionAndThrow(new IllegalArgumentException(onlyPostParameter + " parameter should only be used in POST requests"));
                 }
             }
         }
     }
 
-    private static void logExceptionAndThrow(final Exception ex) {
-        LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
-        throw new RuntimeException(ex.getMessage(), ex);
-    }
 
-    private static Handler loadLoggerHandlerByClassName(final String loggerHandlerClassName) throws Exception {
-        try {
-            if (loggerHandlerClassName == null) {
-                return null;
-            }
 
-            final ClassLoader classLoader = RequestParameterPolicyEnforcementFilter.class.getClassLoader();
-            final Class loggerHandlerClass = classLoader.loadClass(loggerHandlerClassName);
-            if (loggerHandlerClass != null) {
-                return (Handler) loggerHandlerClass.newInstance();
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.FINE, e.getMessage(), e);
-        }
-        return null;
-    }
 }
