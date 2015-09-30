@@ -254,8 +254,8 @@
     <junit.version>4.11</junit.version>
     <slf4j.version>1.7.12</slf4j.version>
     <mockito.version>1.9.5</mockito.version>
-    <project.build.sourceVersion>1.6</project.build.sourceVersion>
-    <project.build.targetVersion>1.6</project.build.targetVersion>
+    <project.build.sourceVersion>1.7</project.build.sourceVersion>
+    <project.build.targetVersion>1.7</project.build.targetVersion>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
