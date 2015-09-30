@@ -2,11 +2,59 @@ CAS security filter [![Maven Central](https://maven-badges.herokuapp.com/maven-c
 ====================
 
 
-This project provides a blunt generic Java Servlet Filter suitable for patching-in-place Java CAS server and Java CAS client deployments vulnerable to certain request parameter based bad-CAS-protocol-input attacks.
+This project provides blunt generic Java Servlet filters suitable for patching-in-place Java CAS server and Java CAS client deployments vulnerable to certain request parameter based bad-CAS-protocol-input attacks.
 
 ## Build [![Build Status](https://api.travis-ci.org/Jasig/cas-server-security-filter.png)](http://travis-ci.org/Jasig/cas-server-security-filter)
 
-In its `1.0` version, this project provided a `SecurityFilter` that blocked multi-valued request parameters.  In this `2.0` version, `SecurityFilter` is removed in favor of a more configurable `RequestParameterPolicyEnforcementFilter`.
+
+ResponseHeadersEnforcementFilter for patching CAS client usages
+----------------------------------------------------------------------
+
+This is a Java Servlet Filter to be used to inject default security headers into the respose:
+See [this guide](http://docs.spring.io/spring-security/site/docs/current/reference/html/headers.html)
+for reference. It has no dependencies.
+
+Configuration options
+---------------------
+
+This Filter is optionally configured via Filter `init-param` in `web.xml`.
+
+In general the Filter is very persnickety about init-params, such that if you give it a configuration that the Filter is not totally sure it understands, it will fail Filter initialization. Note that all configuration knobs are turned off by default.
+
+### enableCacheControl init-param
+When `true`, will inject the following headers into the response for non-static resources:
+
+```
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+```
+
+### enableXContentTypeOptions init-param
+When `true`, will inject the following headers into the response:
+
+```
+X-Content-Type-Options: nosniff
+```
+
+### enableStrictTransportSecurity init-param
+When `true`, will inject the following headers into the response:
+
+```
+Strict-Transport-Security: max-age=15768000 ; includeSubDomains
+```
+### enableXFrameOptions init-param
+When `true`, will inject the following headers into the response:
+
+```
+X-Frame-Options: DENY
+```
+### enableXSSProtection init-param
+When `true`, will inject the following headers into the response:
+
+```
+X-XSS-Protection: 1; mode=block
+```
 
 RequestParameterPolicyEnforcementFilter for patching CAS client usages
 ----------------------------------------------------------------------
@@ -88,7 +136,7 @@ So, if you want to scrutinize the characters in all parameters, you might have t
   <url-pattern>/*</url-pattern>
 </filter-mapping>
  ```
- 
+
 ### Restrictions suitable for fronting a CAS Client
 
 If you're using this Filter for protection in front of a CAS client library usage, you might want to tighten it down to just checking the request parameters involved in the CAS protocol.
@@ -138,7 +186,7 @@ This approach has the advantage of only blocking specific CAS protocol parameter
 ### An entirely novel configuration
 
 So, a neat thing about this Filter is that it has nothing to do with CAS and it has no dependencies at all other than the Servlet API, so on that fateful day when you discover that some Java web application has some problem involving illicit submissions of the semicolon character in a request parameter named `query`, you can plop this Filter in front of it and get back to safety.  Doing so will almost certainly just work, since this Filter has no external dependencies whatsoever except on the Servlet API that had to be present for that Web Application to be a Java web app anyway.
- 
+
 ```xml
  <filter>
    <filter-name>requestParameterFilter</filter-name>
