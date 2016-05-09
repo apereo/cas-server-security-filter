@@ -20,7 +20,7 @@
 before_install:
 - mvn -v
 - java -version
-script: mvn install
+script: mvn clean install
 env: 
   global: 
   - secure: ONCR2TafR1PfxI0bnHqQ1+aCZmOgJP0D6fQL7eNigRJGDXeoBjrLyrMwgrN+eY/cQ+P0e8o1tr95qcz4gIIKA1Wt2XD3K9rjUwM/QTQJzBfKxTbBxKqmS5MtFdAEV7ppXTbTv7aFVVOdX8AFnZWJA/9DRD+ljGQ6raboLsDXzII=
