@@ -1,37 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Licensed to Jasig under one or more contributor license
-  ~ agreements. See the NOTICE file distributed with this work
-  ~ for additional information regarding copyright ownership.
-  ~ Jasig licenses this file to you under the Apache License,
-  ~ Version 2.0 (the "License"); you may not use this file
-  ~ except in compliance with the License.  You may obtain a
-  ~ copy of the License at the following location:
-  ~
-  ~   http://www.apache.org/licenses/LICENSE-2.0
-  ~
-  ~ Unless required by applicable law or agreed to in writing,
-  ~ software distributed under the License is distributed on an
-  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-  ~ KIND, either express or implied.  See the License for the
-  ~ specific language governing permissions and limitations
-  ~ under the License.
-  -->
 
+    Licensed to Apereo under one or more contributor license
+    agreements. See the NOTICE file distributed with this work
+    for additional information regarding copyright ownership.
+    Apereo licenses this file to you under the Apache License,
+    Version 2.0 (the "License"); you may not use this file
+    except in compliance with the License.  You may obtain a
+    copy of the License at the following location:
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
     <groupId>org.jasig.parent</groupId>
     <artifactId>jasig-parent</artifactId>
-    <version>39</version>
+    <version>41</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.jasig.cas</groupId>
+  <groupId>org.apereo.cas</groupId>
   <artifactId>cas-server-security-filter</artifactId>
   <packaging>jar</packaging>
   <name>CAS server security filter</name>
   <description>A Java Servlet Filter for applying generic security policy on incoming HTTP request parameters, implementing an application firewall of sorts.</description>
   <version>2.0.5-SNAPSHOT</version>
-  <url>http://www.jasig.org/cas</url>
+  <url>http://www.apereo.org/cas</url>
   <inceptionYear>2014</inceptionYear>
 
   <licenses>
@@ -56,37 +57,14 @@
 
   <issueManagement>
     <system>Github issues</system>
-    <url>https://github.com/Jasig/cas-server-security-filter/issues</url>
+    <url>https://github.com/Apereo/cas-server-security-filter/issues</url>
   </issueManagement>
 
-  <mailingLists>
-    <mailingList>
-      <name>cas-user</name>
-      <subscribe>join-cas-user@lists.jasig.org</subscribe>
-      <unsubscribe>leave-cas-user@lists.jasig.org</unsubscribe>
-      <post>cas-user@lists.jasig.org</post>
-      <archive>https://lists.wisc.edu/read/?forum=cas-user</archive>
-    </mailingList>
-    <mailingList>
-      <name>cas-dev</name>
-      <subscribe>join-cas-dev@lists.jasig.org</subscribe>
-      <unsubscribe>leave-cas-dev@lists.jasig.org</unsubscribe>
-      <post>cas-dev@lists.jasig.org</post>
-      <archive>https://lists.wisc.edu/read/?forum=cas-dev</archive>
-    </mailingList>
-    <mailingList>
-      <name>cas-announce</name>
-      <subscribe>join-cas-announce@lists.jasig.org</subscribe>
-      <unsubscribe>leave-cas-announce@lists.jasig.org</unsubscribe>
-      <post>cas-announce@lists.jasig.org</post>
-      <archive>https://lists.wisc.edu/read/?forum=cas-announce</archive>
-    </mailingList>
-  </mailingLists>
 
   <scm>
-    <connection>scm:git:git@github.com:Jasig/cas-server-security-filter.git</connection>
-    <developerConnection>scm:git:git@github.com:Jasig/cas-server-security-filter.git</developerConnection>
-    <url>https://github.com/Jasig/cas-server-security-filter</url>
+    <connection>scm:git:git@github.com:apereo/cas-server-security-filter.git</connection>
+    <developerConnection>scm:git:git@github.com:apereo/cas-server-security-filter.git</developerConnection>
+    <url>https://github.com/apereo/cas-server-security-filter</url>
     <tag>HEAD</tag>
   </scm>
 

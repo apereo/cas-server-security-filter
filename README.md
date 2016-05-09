@@ -1,10 +1,10 @@
-CAS security filter [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.jasig.cas/cas-server-security-filter/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/org.jasig.cas/cas-server-security-filter)
+CAS security filter [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apereo.cas/cas-server-security-filter/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/org.apereo.cas/cas-server-security-filter)
 ====================
 
 
 This project provides blunt generic Java Servlet filters suitable for patching-in-place Java CAS server and Java CAS client deployments vulnerable to certain request parameter based bad-CAS-protocol-input attacks.
 
-## Build [![Build Status](https://api.travis-ci.org/Jasig/cas-server-security-filter.png)](http://travis-ci.org/Jasig/cas-server-security-filter)
+## Build [![Build Status](https://api.travis-ci.org/apereo/cas-server-security-filter.png)](http://travis-ci.org/apereo/cas-server-security-filter)
 
 
 ResponseHeadersEnforcementFilter for patching CAS client usages
@@ -104,7 +104,7 @@ Configuration Examples
 ```xml
 <filter>
   <filter-name>requestParameterFilter</filter-name>
-  <filter-class>org.jasig.cas.security.RequestParameterPolicyEnforcementFilter</filter-class>
+  <filter-class>org.apereo.cas.security.RequestParameterPolicyEnforcementFilter</filter-class>
 </filter>
 ...
 <filter-mapping>
@@ -124,7 +124,7 @@ So, if you want to scrutinize the characters in all parameters, you might have t
 ```xml
 <filter>
   <filter-name>requestParameterFilter</filter-name>
-  <filter-class>org.jasig.cas.security.RequestParameterPolicyEnforcementFilter</filter-class>
+  <filter-class>org.apereo.cas.security.RequestParameterPolicyEnforcementFilter</filter-class>
   <init-param>
     <param-name>allowMultiValuedParameters</param-name>
     <param-value>true</param-value>
@@ -144,7 +144,7 @@ If you're using this Filter for protection in front of a CAS client library usag
 ```xml
 <filter>
   <filter-name>requestParameterFilter</filter-name>
-  <filter-class>org.jasig.cas.security.RequestParameterPolicyEnforcementFilter</filter-class>
+  <filter-class>org.apereo.cas.security.RequestParameterPolicyEnforcementFilter</filter-class>
   <init-param>
     <param-name>parametersToCheck</param-name>
     <param-value>ticket SAMLArt pgtIou pgtId</param-value>
@@ -164,7 +164,7 @@ Likewise, you could use this Filter in front of a CAS Server to prevent unexpect
 ```xml
 <filter>
   <filter-name>requestParameterFilter</filter-name>
-  <filter-class>org.jasig.cas.security.RequestParameterPolicyEnforcementFilter</filter-class>
+  <filter-class>org.apereo.cas.security.RequestParameterPolicyEnforcementFilter</filter-class>
   <init-param>
     <param-name>parametersToCheck</param-name>
     <param-value>ticket SAMLArt service renew gateway warn logoutUrl pgtUrl</param-value>
@@ -190,7 +190,7 @@ So, a neat thing about this Filter is that it has nothing to do with CAS and it 
 ```xml
  <filter>
    <filter-name>requestParameterFilter</filter-name>
-   <filter-class>org.jasig.cas.security.RequestParameterPolicyEnforcementFilter</filter-class>
+   <filter-class>org.apereo.cas.security.RequestParameterPolicyEnforcementFilter</filter-class>
    <init-param>
      <param-name>parametersToCheck</param-name>
      <param-value>query</param-value>

@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to Apereo under one or more contributor license
  * agreements. See the NOTICE file distributed with this work
  * for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jasig.cas.security;
+package org.apereo.cas.security;
 
 import java.io.IOException;
 import java.util.*;
