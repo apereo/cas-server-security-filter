@@ -6,9 +6,9 @@
  * Version 2.0 (the "License"); you may not use this file
  * except in compliance with the License.  You may obtain a
  * copy of the License at the following location:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -18,20 +18,24 @@
  */
 package org.apereo.cas.security;
 
-import java.io.IOException;
-import java.util.*;
-
 import org.junit.Test;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
-import javax.servlet.*;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.*;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Tests the {@link RequestParameterPolicyEnforcementFilter}.
@@ -54,6 +58,9 @@ public final class RequestParameterPolicyEnforcementFilterTests {
     /* Tests for the Filter as a whole.
      */
 
+    static {
+        FilterUtils.setThrowOnErrors(true);
+    }
 
     /**
      * Test that the Filter throws on init when unrecognized Filter init-param.
@@ -107,7 +114,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
         final Set<String> initParameterNames = new HashSet<String>();
 
         initParameterNames.add(RequestParameterPolicyEnforcementFilter.CHARACTERS_TO_FORBID);
-        initParameterNames.add(FilterUtils.LOGGER_HANDLER_CLASS_NAME);
+        initParameterNames.add(AbstractSecurityFilter.LOGGER_HANDLER_CLASS_NAME);
         final Enumeration parameterNamesEnumeration = Collections.enumeration(initParameterNames);
         final FilterConfig filterConfig = mock(FilterConfig.class);
         when(filterConfig.getInitParameterNames()).thenReturn(parameterNamesEnumeration);
@@ -116,7 +123,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
                 .thenReturn("none");
         when(filterConfig.getInitParameter(RequestParameterPolicyEnforcementFilter.PARAMETERS_TO_CHECK))
                 .thenReturn(null);
-        when(filterConfig.getInitParameter(FilterUtils.LOGGER_HANDLER_CLASS_NAME))
+        when(filterConfig.getInitParameter(AbstractSecurityFilter.LOGGER_HANDLER_CLASS_NAME))
                 .thenReturn(SLF4JBridgeHandler.class.getCanonicalName());
 
         filter.init(filterConfig);
@@ -128,7 +135,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
      * Test that, in the default configuration, when presented with a multi-valued parameter that configured to check
      * and configured to require not multi valued, rejects request.
      */
-    @Test(expected  = RuntimeException.class)
+    @Test(expected = RuntimeException.class)
     public void testRejectsMultiValuedRequestParameter() throws IOException, ServletException {
 
         final RequestParameterPolicyEnforcementFilter filter = new RequestParameterPolicyEnforcementFilter();
@@ -157,7 +164,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
         // mock up a request to filter
 
         final Map<String, String[]> requestParameterMap = new HashMap<String, String[]>();
-        requestParameterMap.put("someName", new String[] {"someValue", "someOtherValue"});
+        requestParameterMap.put("someName", new String[]{"someValue", "someOtherValue"});
 
         final HttpServletRequest request = mock(HttpServletRequest.class);
         when(request.getParameterMap()).thenReturn(requestParameterMap);
@@ -205,7 +212,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
         // mock up a request to filter, with a multi-valued checked parameter
 
         final Map<String, String[]> requestParameterMap = new HashMap<String, String[]>();
-        requestParameterMap.put("someName", new String[] {"someValue", "someOtherValue"});
+        requestParameterMap.put("someName", new String[]{"someValue", "someOtherValue"});
 
         final HttpServletRequest request = mock(HttpServletRequest.class);
         when(request.getParameterMap()).thenReturn(requestParameterMap);
@@ -254,7 +261,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
 
         final Map<String, String[]> requestParameterMap = new HashMap<String, String[]>();
         // percent character is illicit by default, so, illicit character in this parameter value
-        requestParameterMap.put("someName", new String[] {"someValue%40gmail.com"});
+        requestParameterMap.put("someName", new String[]{"someValue%40gmail.com"});
 
         final HttpServletRequest request = mock(HttpServletRequest.class);
         when(request.getParameterMap()).thenReturn(requestParameterMap);
@@ -303,7 +310,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
         final Map<String, String[]> requestParameterMap = new HashMap<String, String[]>();
         // percent character is illicit by default, so, illicit character in this parameter value
         // but this parameter name is unchecked
-        requestParameterMap.put("uncheckedName", new String[] {"someValue%40gmail.com"});
+        requestParameterMap.put("uncheckedName", new String[]{"someValue%40gmail.com"});
 
         final HttpServletRequest request = mock(HttpServletRequest.class);
         when(request.getParameterMap()).thenReturn(requestParameterMap);
@@ -336,7 +343,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
         parameterNames.add(RequestParameterPolicyEnforcementFilter.ALLOW_MULTI_VALUED_PARAMETERS);
         final Enumeration parameterNamesEnumeration = Collections.enumeration(parameterNames);
 
-         RequestParameterPolicyEnforcementFilter.throwIfUnrecognizedParamName(parameterNamesEnumeration);
+        RequestParameterPolicyEnforcementFilter.throwIfUnrecognizedParamName(parameterNamesEnumeration);
     }
 
     /**
@@ -416,7 +423,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
     @Test
     public void testParsesNullToEmptySet() {
 
-        final Set<String> returnedSet  = RequestParameterPolicyEnforcementFilter.parseParametersList(null, true);
+        final Set<String> returnedSet = RequestParameterPolicyEnforcementFilter.parseParametersList(null, true);
 
         assertTrue(returnedSet.isEmpty());
 
@@ -563,8 +570,6 @@ public final class RequestParameterPolicyEnforcementFilterTests {
      */
 
 
-
-
     /**
      * Test that enforcing no-multi-value detects multi-valued parameter and throws.
      */
@@ -576,7 +581,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
 
         // set up a parameter map with a multi-valued parameter
         final Map<String, String[]> parameterMap = new HashMap<String, String[]>();
-        parameterMap.put("dogName", new String[] {"Johan", "Cubby"});
+        parameterMap.put("dogName", new String[]{"Johan", "Cubby"});
 
         RequestParameterPolicyEnforcementFilter.requireNotMultiValued(parametersToCheck, parameterMap);
     }
@@ -592,7 +597,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
 
         // set up a parameter map with single-valued parameter
         final Map<String, String[]> parameterMap = new HashMap<String, String[]>();
-        parameterMap.put("dogName", new String[] {"Abbie"});
+        parameterMap.put("dogName", new String[]{"Abbie"});
 
         RequestParameterPolicyEnforcementFilter.requireNotMultiValued(parametersToCheck, parameterMap);
 
@@ -625,7 +630,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
 
         // set up a parameter map with a multi-valued parameter with a name not matching those to check
         final Map<String, String[]> parameterMap = new HashMap<String, String[]>();
-        parameterMap.put("catName", new String[] {"Reggie", "Shenanigans"});
+        parameterMap.put("catName", new String[]{"Reggie", "Shenanigans"});
 
         RequestParameterPolicyEnforcementFilter.requireNotMultiValued(parametersToCheck, parameterMap);
     }
@@ -651,9 +656,9 @@ public final class RequestParameterPolicyEnforcementFilterTests {
         charactersToForbid.add('%');
 
         final Map<String, String[]> parameterMap = new HashMap<String, String[]>();
-        parameterMap.put("catName", new String[] {"Reggie", "Shenanigans"});
-        parameterMap.put("dogName", new String[] {"Brutus", "Johan", "Cubby", "Abbie"});
-        parameterMap.put("plantName", new String[] {"Rex"});
+        parameterMap.put("catName", new String[]{"Reggie", "Shenanigans"});
+        parameterMap.put("dogName", new String[]{"Brutus", "Johan", "Cubby", "Abbie"});
+        parameterMap.put("plantName", new String[]{"Rex"});
 
         RequestParameterPolicyEnforcementFilter.enforceParameterContentCharacterRestrictions(parametersToCheck,
                 charactersToForbid, parameterMap);
@@ -675,10 +680,10 @@ public final class RequestParameterPolicyEnforcementFilterTests {
         charactersToForbid.add('%');
 
         final Map<String, String[]> parameterMap = new HashMap<String, String[]>();
-        parameterMap.put("catName", new String[] {"Reggie", "Shenanigans"});
-        parameterMap.put("dogName", new String[] {"Brutus", "Johan", "Cubby", "Abbie"});
+        parameterMap.put("catName", new String[]{"Reggie", "Shenanigans"});
+        parameterMap.put("dogName", new String[]{"Brutus", "Johan", "Cubby", "Abbie"});
         // plantName is checked, and contains a forbidden character
-        parameterMap.put("plantName", new String[] {"Rex&p0wned=true"});
+        parameterMap.put("plantName", new String[]{"Rex&p0wned=true"});
 
         RequestParameterPolicyEnforcementFilter.enforceParameterContentCharacterRestrictions(parametersToCheck,
                 charactersToForbid, parameterMap);
@@ -700,10 +705,10 @@ public final class RequestParameterPolicyEnforcementFilterTests {
         charactersToForbid.add('$');
 
         final Map<String, String[]> parameterMap = new HashMap<String, String[]>();
-        parameterMap.put("catName", new String[] {"Reggie", "Shenanigans"});
+        parameterMap.put("catName", new String[]{"Reggie", "Shenanigans"});
         // dogName is checked, and contains a forbidden character
-        parameterMap.put("dogName", new String[] {"Brutus", "Johan", "Cub!by", "Abbie"});
-        parameterMap.put("plantName", new String[] {"Rex"});
+        parameterMap.put("dogName", new String[]{"Brutus", "Johan", "Cub!by", "Abbie"});
+        parameterMap.put("plantName", new String[]{"Rex"});
 
         RequestParameterPolicyEnforcementFilter.enforceParameterContentCharacterRestrictions(parametersToCheck,
                 charactersToForbid, parameterMap);
@@ -726,11 +731,11 @@ public final class RequestParameterPolicyEnforcementFilterTests {
         charactersToForbid.add('$');
 
         final Map<String, String[]> parameterMap = new HashMap<String, String[]>();
-        parameterMap.put("catName", new String[] {"Reggie", "Shenanigans"});
-        parameterMap.put("dogName", new String[] {"Brutus", "Johan", "Cubby", "Abbie"});
+        parameterMap.put("catName", new String[]{"Reggie", "Shenanigans"});
+        parameterMap.put("dogName", new String[]{"Brutus", "Johan", "Cubby", "Abbie"});
 
         // plantName is not checked
-        parameterMap.put("plantName", new String[] {"Rex&ownage=true"});
+        parameterMap.put("plantName", new String[]{"Rex&ownage=true"});
 
         RequestParameterPolicyEnforcementFilter.enforceParameterContentCharacterRestrictions(parametersToCheck,
                 charactersToForbid, parameterMap);
@@ -753,7 +758,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
         charactersToForbid.add('$');
 
         final Map<String, String[]> parameterMap = new HashMap<String, String[]>();
-        parameterMap.put("dogName", new String[] {"Brutus", "Johan", "Cubby", "Abbie"});
+        parameterMap.put("dogName", new String[]{"Brutus", "Johan", "Cubby", "Abbie"});
 
         RequestParameterPolicyEnforcementFilter.enforceParameterContentCharacterRestrictions(parametersToCheck,
                 charactersToForbid, parameterMap);
@@ -783,7 +788,7 @@ public final class RequestParameterPolicyEnforcementFilterTests {
         onlyPostParameters.add("password");
 
         final Map<String, String[]> parameterMap = new HashMap<String, String[]>();
-        parameterMap.put("username", new String[] {"jle"});
+        parameterMap.put("username", new String[]{"jle"});
 
         RequestParameterPolicyEnforcementFilter.checkOnlyPostParameters(method, parameterMap, onlyPostParameters);
     }

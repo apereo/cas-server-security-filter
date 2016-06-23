@@ -6,9 +6,9 @@
  * Version 2.0 (the "License"); you may not use this file
  * except in compliance with the License.  You may obtain a
  * copy of the License at the following location:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -36,21 +36,21 @@ import java.util.logging.Logger;
 /**
  * This is a Java Servlet Filter that examines specified Request Parameters as to whether they contain specified
  * characters and as to whether they are multivalued throws an Exception if they do not meet configured rules.
- *
+ * <p>
  * Configuration:
- *
+ * <p>
  * The filter defaults to checking all request parameters for the hash, percent, question mark,
  * and ampersand characters, and enforcing no-multi-valued-ness.
- *
+ * <p>
  * You can turn off multi-value checking by setting the init-param "allowMultiValuedParameters" to "true".  Setting it
  * to "false" is a no-op retaining the default configuration.  Setting this parameter to any other value fails filter
  * initialization.
- *
+ * <p>
  * You can change the set of request parameters being examined by setting the init-param "parametersToCheck" to a
  * whitespace delimited list of parameters to check.  Setting it to the special value "*" retains the default
  * behavior of checking all.  Setting it to a blank value fails filter initialization.  Setting it to a String
  * containing the asterisk token and any additional token fails filter initialization.
- *
+ * <p>
  * You can change the set of characters looked for by setting the init-param "charactersToForbid" to a whitespace
  * delimited list of characters to forbid.  Setting it to the special value "none" disables the illicit character
  * blocking feature of this Filter (for the case where you only want to use the mutli-valued-ness blocking).
@@ -59,14 +59,14 @@ import java.util.logging.Logger;
  * (e.g., a value with multi-character Strings between the whitespace delimiters)
  * fails filter initialization.  The default set of characters disallowed is percent, hash, question mark,
  * and ampersand.
- *
+ * <p>
  * Setting any other init parameter other than these recognized by this Filter will fail Filter initialization.  This
  * is to protect the adopter from typos or misunderstandings in web.xml configuration such that an intended
  * configuration might not have taken effect, since that might have security implications.
- *
+ * <p>
  * Setting the Filter to both allow multi-valued parameters and to disallow no characters would make the Filter a
  * no-op, and so fails Filter initialization since you probably meant the Filter to be doing something.
- *
+ * <p>
  * The intent of this filter is rough, brute force blocking of unexpected characters in specific CAS protocol related
  * request parameters.  This is one option as a workaround for patching in place certain Java CAS Client versions that
  * may be vulnerable to certain attacks involving crafted request parameter values that may be mishandled.  This is
@@ -74,14 +74,14 @@ import java.util.logging.Logger;
  * CAS protocol requests.  Aside from the intent to be useful for those cases, there is nothing CAS-specific about
  * this Filter itself.  This is a generic Filter for doing some pretty basic generic sanity checking on request
  * parameters.  It might come in handy the next time this kind of issue arises.
- *
+ * <p>
  * This Filter is written to have no external .jar dependencies aside from the Servlet API necessary to be a Filter.
- *
+ * <p>
  * This class is declared final because it is not designed for extension.
  *
  * @since cas-security-filter 1.1
  */
-public final class RequestParameterPolicyEnforcementFilter implements Filter {
+public final class RequestParameterPolicyEnforcementFilter extends AbstractSecurityFilter implements Filter {
 
     private static final Logger LOGGER = Logger.getLogger(RequestParameterPolicyEnforcementFilter.class.getName());
 
@@ -138,6 +138,7 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
      */
     private Set<String> onlyPostParameters;
 
+
     /* ========================================================================================================== */
     /* Filter methods */
 
@@ -157,11 +158,22 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
         this.onlyPostParameters = onlyPostParameters;
     }
 
+    public RequestParameterPolicyEnforcementFilter() {
+        FilterUtils.configureLogging(getLoggerHandlerClassName(), LOGGER);
+    }
+
+    @Override
+    public void setLoggerHandlerClassName(final String loggerHandlerClassName) {
+        super.setLoggerHandlerClassName(loggerHandlerClassName);
+        FilterUtils.configureLogging(getLoggerHandlerClassName(), LOGGER);
+    }
+
     @Override
     public void init(final FilterConfig filterConfig) throws ServletException {
 
-        FilterUtils.configureLogging(filterConfig, LOGGER);
-
+        
+            FilterUtils.configureLogging(getLoggerHandlerClassName(), LOGGER);
+        
         // verify there are no init parameters configured that are not recognized
         // since an unrecognized init param might be the adopter trying to configure this filter in an important way
         // and accidentally ignoring that intent might have security implications.
@@ -176,32 +188,32 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
         try {
             this.allowMultiValueParameters = FilterUtils.parseStringToBooleanDefaultingToFalse(initParamAllowMultiValuedParameters);
         } catch (final Exception e) {
-            FilterUtils.logExceptionAndThrow(new ServletException("Error parsing request parameter [" + ALLOW_MULTI_VALUED_PARAMETERS
+            FilterUtils.logException(LOGGER, new ServletException("Error parsing request parameter [" + ALLOW_MULTI_VALUED_PARAMETERS
                     + "] with value [" + initParamAllowMultiValuedParameters + "]", e));
         }
 
         try {
             this.parametersToCheck = parseParametersList(initParamParametersToCheck, true);
         } catch (final Exception e) {
-            FilterUtils.logExceptionAndThrow(new ServletException("Error parsing request parameter " + PARAMETERS_TO_CHECK + " with value ["
+            FilterUtils.logException(LOGGER, new ServletException("Error parsing request parameter " + PARAMETERS_TO_CHECK + " with value ["
                     + initParamParametersToCheck + "]", e));
         }
         try {
             this.onlyPostParameters = parseParametersList(initParamOnlyPostParameters, false);
         } catch (final Exception e) {
-            FilterUtils.logExceptionAndThrow(new ServletException("Error parsing request parameter " + ONLY_POST_PARAMETERS + " with value ["
+            FilterUtils.logException(LOGGER, new ServletException("Error parsing request parameter " + ONLY_POST_PARAMETERS + " with value ["
                     + initParamOnlyPostParameters + "]", e));
         }
 
         try {
             this.charactersToForbid = parseCharactersToForbid(initParamCharactersToForbid);
         } catch (final Exception e) {
-            FilterUtils.logExceptionAndThrow(new ServletException("Error parsing request parameter " + CHARACTERS_TO_FORBID + " with value [" +
+            FilterUtils.logException(LOGGER, new ServletException("Error parsing request parameter " + CHARACTERS_TO_FORBID + " with value [" +
                     initParamCharactersToForbid + "]", e));
         }
 
         if (this.allowMultiValueParameters && this.charactersToForbid.isEmpty()) {
-            FilterUtils.logExceptionAndThrow(new ServletException("Configuration to allow multi-value parameters and forbid no characters makes "
+            FilterUtils.logException(LOGGER, new ServletException("Configuration to allow multi-value parameters and forbid no characters makes "
                     + getClass().getSimpleName() + " a no-op, which is probably not what you want, " +
                     "so failing Filter init."));
         }
@@ -209,13 +221,12 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
     }
 
 
-
-
     @Override
     public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain)
             throws IOException, ServletException {
 
         try {
+
             if (request instanceof HttpServletRequest) {
                 final HttpServletRequest httpServletRequest = (HttpServletRequest) request;
 
@@ -232,7 +243,7 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
                     parametersToCheckHere = this.parametersToCheck;
                 }
 
-                if (! this.allowMultiValueParameters) {
+                if (!this.allowMultiValueParameters) {
                     requireNotMultiValued(parametersToCheckHere, parameterMap);
                 }
 
@@ -241,9 +252,9 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
 
                 checkOnlyPostParameters(httpServletRequest.getMethod(), parameterMap, this.onlyPostParameters);
             }
-        } catch (final Exception e ) {
+        } catch (final Exception e) {
             // translate to a ServletException to meet the typed expectations of the Filter API.
-            FilterUtils.logExceptionAndThrow(new ServletException(getClass().getSimpleName() + " is blocking this request.  Examine the cause in" +
+            FilterUtils.logException(LOGGER, new ServletException(getClass().getSimpleName() + " is blocking this request.  Examine the cause in" +
                     " this stack trace to understand why.", e));
         }
 
@@ -261,9 +272,9 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
     /**
      * Examines the Filter init parameter names and throws ServletException if they contain an unrecognized
      * init parameter name.
-     *
+     * <p>
      * This is a stateless static method.
-     *
+     * <p>
      * This method is an implementation detail and is not exposed API.
      * This method is only non-private to allow JUnit testing.
      *
@@ -276,12 +287,12 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
         recognizedParameterNames.add(PARAMETERS_TO_CHECK);
         recognizedParameterNames.add(ONLY_POST_PARAMETERS);
         recognizedParameterNames.add(CHARACTERS_TO_FORBID);
-        recognizedParameterNames.add(FilterUtils.LOGGER_HANDLER_CLASS_NAME);
+        recognizedParameterNames.add(LOGGER_HANDLER_CLASS_NAME);
 
         while (initParamNames.hasMoreElements()) {
             final String initParamName = (String) initParamNames.nextElement();
-            if (! recognizedParameterNames.contains(initParamName)) {
-                FilterUtils.logExceptionAndThrow(new ServletException("Unrecognized init parameter [" + initParamName + "].  Failing safe.  Typo" +
+            if (!recognizedParameterNames.contains(initParamName)) {
+                FilterUtils.logException(LOGGER, new ServletException("Unrecognized init parameter [" + initParamName + "].  Failing safe.  Typo" +
                         " in the web.xml configuration? " +
                         " Misunderstanding about the configuration "
                         + RequestParameterPolicyEnforcementFilter.class.getSimpleName() + " expects?"));
@@ -294,32 +305,29 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
      *
      * @return Configured logger handler, or SLF4j handler, or JUL's default.
      */
-    Logger getLogger () {
+    Logger getLogger() {
         return LOGGER;
     }
 
 
-
-
     /**
      * Parse the whitespace delimited String of parameters to check.
-     *
+     * <p>
      * If the String is null, return the empty set.
      * If the whitespace delimited String contains no tokens, throw IllegalArgumentException.
      * If the sole token is an asterisk, return the empty set.
      * If the asterisk token is encountered among other tokens, throw IllegalArgumentException.
-     *
+     * <p>
      * This method returning an empty Set has the special meaning of "check all parameters".
-     *
+     * <p>
      * This is a stateless static method.
-     *
+     * <p>
      * This method is an implementation detail and is not exposed API.
      * This method is only non-private to allow JUnit testing.
      *
      * @param initParamValue null, or a non-blank whitespace delimited list of parameters to check
-     * @param allowWildcard whether a wildcard is allowed instead of the parameters list
+     * @param allowWildcard  whether a wildcard is allowed instead of the parameters list
      * @return a Set of String names of parameters to check, or an empty set representing check-them-all.
-     *
      * @throws IllegalArgumentException when the init param value is out of spec
      */
     static Set<String> parseParametersList(final String initParamValue, final boolean allowWildcard) {
@@ -332,8 +340,8 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
 
         final String[] tokens = initParamValue.split("\\s+");
 
-        if ( 0 == tokens.length) {
-            FilterUtils.logExceptionAndThrow(new IllegalArgumentException("[" + initParamValue +
+        if (0 == tokens.length) {
+            FilterUtils.logException(LOGGER, new IllegalArgumentException("[" + initParamValue +
                     "] had no tokens but should have had at least one token."));
         }
 
@@ -344,7 +352,7 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
         for (final String parameterName : tokens) {
 
             if ("*".equals(parameterName)) {
-                FilterUtils.logExceptionAndThrow(new IllegalArgumentException("Star token encountered among other tokens in parsing [" + initParamValue + "]"));
+                FilterUtils.logException(LOGGER, new IllegalArgumentException("Star token encountered among other tokens in parsing [" + initParamValue + "]"));
             }
 
             parameterNames.add(parameterName);
@@ -355,7 +363,7 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
 
     /**
      * Parse a whitespace delimited set of Characters from a String.
-     *
+     * <p>
      * If the String is null (init param was not set) default to DEFAULT_CHARACTERS_BLOCKED.
      * If the String is "none" parse to empty set meaning block no characters.
      * If the String is empty throw, to avoid configurer accidentally configuring not to block any characters.
@@ -378,14 +386,14 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
         final String[] tokens = paramValue.split("\\s+");
 
         if (0 == tokens.length) {
-            FilterUtils.logExceptionAndThrow(new IllegalArgumentException("Expected tokens when parsing [" + paramValue + "] but found no tokens."
+            FilterUtils.logException(LOGGER, new IllegalArgumentException("Expected tokens when parsing [" + paramValue + "] but found no tokens."
                     + " If you really want to configure no characters, use the magic value 'none'."));
         }
 
         for (final String token : tokens) {
 
             if (token.length() > 1) {
-                FilterUtils.logExceptionAndThrow(new IllegalArgumentException("Expected tokens of length 1 but found [" + token + "] when " +
+                FilterUtils.logException(LOGGER, new IllegalArgumentException("Expected tokens of length 1 but found [" + token + "] when " +
                         "parsing [" + paramValue + "]"));
             }
 
@@ -401,28 +409,27 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
 
     /**
      * For each parameter to check, verify that it has zero or one value.
-     *
+     * <p>
      * The Set of parameters to check MAY be empty.
      * The parameter map MAY NOT contain any given parameter to check.
-     *
+     * <p>
      * This method is an implementation detail and is not exposed API.
      * This method is only non-private to allow JUnit testing.
-     *
-     *
+     * <p>
+     * <p>
      * Static, stateless method.
      *
      * @param parametersToCheck non-null potentially empty Set of String names of parameters
-     * @param parameterMap non-null Map from String name of parameter to String[] values
-     *
-     *  @throws IllegalStateException if a parameterToCheck is present in the parameterMap with multiple values.
+     * @param parameterMap      non-null Map from String name of parameter to String[] values
+     * @throws IllegalStateException if a parameterToCheck is present in the parameterMap with multiple values.
      */
     static void requireNotMultiValued(final Set<String> parametersToCheck, final Map parameterMap) {
 
         for (final String parameterName : parametersToCheck) {
             if (parameterMap.containsKey(parameterName)) {
                 final String[] values = (String[]) parameterMap.get(parameterName);
-                if ( values.length > 1 ) {
-                    FilterUtils.logExceptionAndThrow(new IllegalStateException("Parameter [" + parameterName + "] had multiple values [" +
+                if (values.length > 1) {
+                    FilterUtils.logException(LOGGER, new IllegalStateException("Parameter [" + parameterName + "] had multiple values [" +
                             Arrays.toString(values) + "] but at most one value is allowable."));
                 }
             }
@@ -433,15 +440,15 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
     /**
      * For each parameter to check, for each value of that parameter, check that the value does not contain
      * forbidden characters.
-     *
+     * <p>
      * This is a stateless static method.
-     *
+     * <p>
      * This method is an implementation detail and is not exposed API.
      * This method is only non-private to allow JUnit testing.
      *
-     * @param parametersToCheck Set of String request parameter names to look for
+     * @param parametersToCheck  Set of String request parameter names to look for
      * @param charactersToForbid Set of Character characters to forbid
-     * @param parameterMap String --> String[] Map, in practice as read from ServletRequest
+     * @param parameterMap       String --> String[] Map, in practice as read from ServletRequest
      */
     static void enforceParameterContentCharacterRestrictions(
             final Set<String> parametersToCheck, final Set<Character> charactersToForbid, final Map parameterMap) {
@@ -465,7 +472,7 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
                         characterAsStringBuilder.append(forbiddenCharacter);
 
                         if (parameterValue.contains(characterAsStringBuilder)) {
-                            FilterUtils.logExceptionAndThrow(new IllegalArgumentException("Disallowed character [" + forbiddenCharacter
+                            FilterUtils.logException(LOGGER, new IllegalArgumentException("Disallowed character [" + forbiddenCharacter
                                     + "] found in value [" + parameterValue + "] of parameter named ["
                                     + parameterToCheck + "]"));
                         }
@@ -488,8 +495,8 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
     /**
      * Check that some parameters should only be in POST requests (according to the configuration).
      *
-     * @param method the method of the request
-     * @param parameterMap all the request parameters
+     * @param method             the method of the request
+     * @param parameterMap       all the request parameters
      * @param onlyPostParameters parameters that should only be in POST requests
      */
     static void checkOnlyPostParameters(final String method, final Map parameterMap, final Set<String> onlyPostParameters) {
@@ -497,12 +504,11 @@ public final class RequestParameterPolicyEnforcementFilter implements Filter {
             Set<String> names = parameterMap.keySet();
             for (String onlyPostParameter : onlyPostParameters) {
                 if (names.contains(onlyPostParameter)) {
-                    FilterUtils.logExceptionAndThrow(new IllegalArgumentException(onlyPostParameter + " parameter should only be used in POST requests"));
+                    FilterUtils.logException(LOGGER, new IllegalArgumentException(onlyPostParameter + " parameter should only be used in POST requests"));
                 }
             }
         }
     }
-
 
 
 }

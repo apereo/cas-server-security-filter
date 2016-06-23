@@ -48,7 +48,7 @@ import java.util.logging.Logger;
  * @author Misagh Moayyed
  * @since 2.0.4
  */
-public final class ResponseHeadersEnforcementFilter implements Filter {
+public final class ResponseHeadersEnforcementFilter extends AbstractSecurityFilter implements Filter {
     private static final Logger LOGGER = Logger.getLogger(ResponseHeadersEnforcementFilter.class.getName());
 
     private static final String INIT_PARAM_ENABLE_CACHE_CONTROL = "enableCacheControl";
@@ -84,9 +84,19 @@ public final class ResponseHeadersEnforcementFilter implements Filter {
         this.enableXSSProtection = enableXSSProtection;
     }
 
+    public ResponseHeadersEnforcementFilter() {
+        FilterUtils.configureLogging(getLoggerHandlerClassName(), LOGGER);
+    }
+
+    @Override
+    public void setLoggerHandlerClassName(final String loggerHandlerClassName) {
+        super.setLoggerHandlerClassName(loggerHandlerClassName);
+        FilterUtils.configureLogging(getLoggerHandlerClassName(), LOGGER);
+    }
+    
     @Override
     public void init(final FilterConfig filterConfig) throws ServletException {
-        FilterUtils.configureLogging(filterConfig, LOGGER);
+        FilterUtils.configureLogging(getLoggerHandlerClassName(), LOGGER);
 
         final Enumeration initParamNames = filterConfig.getInitParameterNames();
         throwIfUnrecognizedParamName(initParamNames);
@@ -102,7 +112,7 @@ public final class ResponseHeadersEnforcementFilter implements Filter {
         try {
             this.enableCacheControl = FilterUtils.parseStringToBooleanDefaultingToFalse(enableCacheControl);
         } catch (final Exception e) {
-            FilterUtils.logExceptionAndThrow(new ServletException("Error parsing parameter [" + INIT_PARAM_ENABLE_CACHE_CONTROL
+            FilterUtils.logException(LOGGER, new ServletException("Error parsing parameter [" + INIT_PARAM_ENABLE_CACHE_CONTROL
                     + "] with value [" + enableCacheControl + "]", e));
         }
 
@@ -110,28 +120,28 @@ public final class ResponseHeadersEnforcementFilter implements Filter {
         try {
             this.enableXContentTypeOptions = FilterUtils.parseStringToBooleanDefaultingToFalse(enableXContentTypeOptions);
         } catch (final Exception e) {
-            FilterUtils.logExceptionAndThrow(new ServletException("Error parsing parameter [" + INIT_PARAM_ENABLE_XCONTENT_OPTIONS
+            FilterUtils.logException(LOGGER, new ServletException("Error parsing parameter [" + INIT_PARAM_ENABLE_XCONTENT_OPTIONS
                     + "] with value [" + enableXContentTypeOptions + "]", e));
         }
 
         try {
             this.enableStrictTransportSecurity = FilterUtils.parseStringToBooleanDefaultingToFalse(enableStrictTransportSecurity);
         } catch (final Exception e) {
-            FilterUtils.logExceptionAndThrow(new ServletException("Error parsing parameter [" + INIT_PARAM_ENABLE_STRICT_TRANSPORT_SECURITY
+            FilterUtils.logException(LOGGER, new ServletException("Error parsing parameter [" + INIT_PARAM_ENABLE_STRICT_TRANSPORT_SECURITY
                     + "] with value [" + enableStrictTransportSecurity + "]", e));
         }
 
         try {
             this.enableXFrameOptions = FilterUtils.parseStringToBooleanDefaultingToFalse(enableXFrameOptions);
         } catch (final Exception e) {
-            FilterUtils.logExceptionAndThrow(new ServletException("Error parsing parameter [" + INIT_PARAM_ENABLE_STRICT_XFRAME_OPTIONS
+            FilterUtils.logException(LOGGER, new ServletException("Error parsing parameter [" + INIT_PARAM_ENABLE_STRICT_XFRAME_OPTIONS
                     + "] with value [" + enableXFrameOptions + "]", e));
         }
 
         try {
             this.enableXSSProtection = FilterUtils.parseStringToBooleanDefaultingToFalse(enableXSSProtection);
         } catch (final Exception e) {
-            FilterUtils.logExceptionAndThrow(new ServletException("Error parsing parameter [" + INIT_PARAM_ENABLE_XSS_PROTECTION
+            FilterUtils.logException(LOGGER, new ServletException("Error parsing parameter [" + INIT_PARAM_ENABLE_XSS_PROTECTION
                     + "] with value [" + enableXSSProtection + "]", e));
         }
     }
@@ -154,13 +164,13 @@ public final class ResponseHeadersEnforcementFilter implements Filter {
         recognizedParameterNames.add(INIT_PARAM_ENABLE_XCONTENT_OPTIONS);
         recognizedParameterNames.add(INIT_PARAM_ENABLE_STRICT_TRANSPORT_SECURITY);
         recognizedParameterNames.add(INIT_PARAM_ENABLE_STRICT_XFRAME_OPTIONS);
-        recognizedParameterNames.add(FilterUtils.LOGGER_HANDLER_CLASS_NAME);
+        recognizedParameterNames.add(LOGGER_HANDLER_CLASS_NAME);
         recognizedParameterNames.add(INIT_PARAM_ENABLE_XSS_PROTECTION);
 
         while (initParamNames.hasMoreElements()) {
             final String initParamName = (String) initParamNames.nextElement();
             if (! recognizedParameterNames.contains(initParamName)) {
-                FilterUtils.logExceptionAndThrow(new ServletException("Unrecognized init parameter [" + initParamName + "].  Failing safe.  Typo" +
+                FilterUtils.logException(LOGGER, new ServletException("Unrecognized init parameter [" + initParamName + "].  Failing safe.  Typo" +
                         " in the web.xml configuration? " +
                         " Misunderstanding about the configuration "
                         + RequestParameterPolicyEnforcementFilter.class.getSimpleName() + " expects?"));
@@ -220,7 +230,8 @@ public final class ResponseHeadersEnforcementFilter implements Filter {
 
             }
         } catch (final Exception e ) {
-            FilterUtils.logExceptionAndThrow(new ServletException(getClass().getSimpleName() + " is blocking this request. Examine the cause in" +
+            FilterUtils.logException(LOGGER, new ServletException(getClass().getSimpleName() 
+                    + " is blocking this request. Examine the cause in" +
                     " this stack trace to understand why.", e));
         }
 

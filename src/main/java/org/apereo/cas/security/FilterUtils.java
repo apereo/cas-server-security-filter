@@ -6,9 +6,9 @@
  * Version 2.0 (the "License"); you may not use this file
  * except in compliance with the License.  You may obtain a
  * copy of the License at the following location:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -18,8 +18,6 @@
  */
 package org.apereo.cas.security;
 
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
@@ -29,29 +27,32 @@ import java.util.logging.Logger;
 
 /**
  * Utility classes.
+ *
  * @author Misagh Moayyed
  * @since 2.1
  */
 public final class FilterUtils {
     private static final Logger LOGGER = Logger.getLogger(FilterUtils.class.getName());
 
-    /** Describes the handler that should be used for logging. If none is defined
-     * the filter will switch to a {@link java.util.logging.ConsoleHandler}.
-     */
-    public static final String LOGGER_HANDLER_CLASS_NAME = "loggerHandlerClassName";
+    public static boolean throwOnErrors;
 
-    private FilterUtils() {}
+    private FilterUtils() {
+    }
+
+    public static void setThrowOnErrors(final boolean throwOnErrors) {
+        FilterUtils.throwOnErrors = throwOnErrors;
+    }
 
     /**
      * Parse a String to a boolean.
-     *
+     * <p>
      * "true" : true
      * "false" : false
      * null : false
-     * Anything else : logExceptionAndThrow(IllegalArgumentException).
-     *
+     * Anything else : logException(IllegalArgumentException).
+     * <p>
      * This is a stateless static method.
-     *
+     * <p>
      * This method is an implementation detail and is not exposed API.
      * This method is only non-private to allow JUnit testing.
      *
@@ -69,12 +70,12 @@ public final class FilterUtils {
             return false;
         }
 
-        logExceptionAndThrow(new IllegalArgumentException("String [" + stringToParse +
+        logException(LOGGER, new IllegalArgumentException("String [" + stringToParse +
                 "] could not parse to a boolean because it was not precisely 'true' or 'false'."));
         return false;
     }
 
-    private static Handler loadLoggerHandlerByClassName(final String loggerHandlerClassName) throws Exception {
+    private static Handler loadLoggerHandlerByClassName(final String loggerHandlerClassName) {
         try {
             if (loggerHandlerClassName == null) {
                 return null;
@@ -91,48 +92,45 @@ public final class FilterUtils {
         return null;
     }
 
-    public static void configureLogging(final FilterConfig filterConfig, final Logger logger) throws ServletException {
-        for (final Handler handler : logger.getHandlers()) {
-            logger.removeHandler(handler);
+    public static void configureLogging(final Handler handler, final Logger logger) {
+        for (final Handler h : logger.getHandlers()) {
+            logger.removeHandler(h);
         }
         logger.setUseParentHandlers(false);
 
-        try {
-            final String loggerHandlerClassName = filterConfig.getInitParameter(LOGGER_HANDLER_CLASS_NAME);
-            Handler handler = loadLoggerHandlerByClassName(loggerHandlerClassName);
-            if (handler == null) {
-                handler = loadLoggerHandlerByClassName("org.slf4j.bridge.SLF4JBridgeHandler");
-            }
+        if (handler == null) {
+            final ConsoleHandler consoleHandler = new ConsoleHandler();
+            consoleHandler.setFormatter(new Formatter() {
+                @Override
+                public String format(final LogRecord record) {
+                    final StringBuffer sb = new StringBuffer();
 
-            if (handler == null) {
-                handler = new ConsoleHandler();
-                handler.setFormatter(new Formatter() {
-                    @Override
-                    public String format(final LogRecord record) {
-                        final StringBuffer sb = new StringBuffer();
+                    sb.append("[");
+                    sb.append(record.getLevel().getName());
+                    sb.append("]\t");
 
-                        sb.append("[");
-                        sb.append(record.getLevel().getName());
-                        sb.append("]\t");
+                    sb.append(formatMessage(record));
+                    sb.append("\n");
 
-                        sb.append(formatMessage(record));
-                        sb.append("\n");
+                    return sb.toString();
+                }
+            });
+            logger.addHandler(consoleHandler);
+        } else {
+            logger.addHandler(handler);
+        }
 
-                        return sb.toString();
-                    }
-                });
-                logger.addHandler(handler);
-            } else {
-                logger.addHandler(handler);
-            }
-        } catch (final Exception e) {
-            throw new ServletException("Could not identify the logging framework per the configuration specified.");
+    }
+
+    public static void configureLogging(final String loggerHandlerClassName, final Logger logger) {
+        final Handler handler = loadLoggerHandlerByClassName(loggerHandlerClassName);
+        configureLogging(handler, logger);
+    }
+
+    public static void logException(final Logger logger, final Exception ex) {
+        logger.log(Level.SEVERE, ex.getMessage(), ex);
+        if (throwOnErrors) {
+            throw new RuntimeException(ex);
         }
     }
-
-    public static void logExceptionAndThrow(final Exception ex) {
-        LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
-        throw new RuntimeException(ex.getMessage(), ex);
-    }
-
 }
