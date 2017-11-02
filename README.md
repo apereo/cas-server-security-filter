@@ -56,6 +56,9 @@ When `true`, will inject the following headers into the response:
 X-XSS-Protection: 1; mode=block
 ```
 
+### contentSecurityPolicy init-param
+When defined, injects the `Content-Security-Policy` header into the response with the value given.
+
 RequestParameterPolicyEnforcementFilter for patching CAS client usages
 ----------------------------------------------------------------------
 
