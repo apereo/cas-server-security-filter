@@ -35,7 +35,6 @@ import java.util.logging.Logger;
 /**
  * Allows users to easily inject the default security headers to assist in protecting the application.
  * The default for is to include the following headers:
- * <p>
  * <pre>
  * Cache-Control: no-cache, no-store, max-age=0, must-revalidate
  * Pragma: no-cache
@@ -55,16 +54,34 @@ public final class ResponseHeadersEnforcementFilter extends AbstractSecurityFilt
     private static final String INIT_PARAM_ENABLE_CACHE_CONTROL = "enableCacheControl";
     private static final String INIT_PARAM_ENABLE_XCONTENT_OPTIONS = "enableXContentTypeOptions";
     private static final String INIT_PARAM_ENABLE_STRICT_TRANSPORT_SECURITY = "enableStrictTransportSecurity";
+
     private static final String INIT_PARAM_ENABLE_STRICT_XFRAME_OPTIONS = "enableXFrameOptions";
+    private static final String INIT_PARAM_STRICT_XFRAME_OPTIONS = "XFrameOptions";
+
     private static final String INIT_PARAM_ENABLE_XSS_PROTECTION = "enableXSSProtection";
+    private static final String INIT_PARAM_XSS_PROTECTION = "XSSProtection";
+
     private static final String INIT_PARAM_CONTENT_SECURITY_POLICY = "contentSecurityPolicy";
 
     private boolean enableCacheControl;
     private boolean enableXContentTypeOptions;
     private boolean enableStrictTransportSecurity;
+
     private boolean enableXFrameOptions;
+    private String XFrameOptions = "DENY";
+
     private boolean enableXSSProtection;
+    private String XSSProtection = "1; mode=block";
+
     private String contentSecurityPolicy;
+
+    public void setXSSProtection(final String XSSProtection) {
+        this.XSSProtection = XSSProtection;
+    }
+
+    public void setXFrameOptions(final String XFrameOptions) {
+        this.XFrameOptions = XFrameOptions;
+    }
 
     public void setEnableStrictTransportSecurity(final boolean enableStrictTransportSecurity) {
         this.enableStrictTransportSecurity = enableStrictTransportSecurity;
@@ -107,7 +124,6 @@ public final class ResponseHeadersEnforcementFilter extends AbstractSecurityFilt
         final Enumeration initParamNames = filterConfig.getInitParameterNames();
         throwIfUnrecognizedParamName(initParamNames);
 
-
         final String enableCacheControl = filterConfig.getInitParameter(INIT_PARAM_ENABLE_CACHE_CONTROL);
         final String enableXContentTypeOptions = filterConfig.getInitParameter(INIT_PARAM_ENABLE_XCONTENT_OPTIONS);
         final String enableStrictTransportSecurity = filterConfig.getInitParameter(INIT_PARAM_ENABLE_STRICT_TRANSPORT_SECURITY);
@@ -118,36 +134,47 @@ public final class ResponseHeadersEnforcementFilter extends AbstractSecurityFilt
             this.enableCacheControl = FilterUtils.parseStringToBooleanDefaultingToFalse(enableCacheControl);
         } catch (final Exception e) {
             FilterUtils.logException(LOGGER, new ServletException("Error parsing parameter [" + INIT_PARAM_ENABLE_CACHE_CONTROL
-                    + "] with value [" + enableCacheControl + "]", e));
+                + "] with value [" + enableCacheControl + "]", e));
         }
-
 
         try {
             this.enableXContentTypeOptions = FilterUtils.parseStringToBooleanDefaultingToFalse(enableXContentTypeOptions);
         } catch (final Exception e) {
             FilterUtils.logException(LOGGER, new ServletException("Error parsing parameter [" + INIT_PARAM_ENABLE_XCONTENT_OPTIONS
-                    + "] with value [" + enableXContentTypeOptions + "]", e));
+                + "] with value [" + enableXContentTypeOptions + "]", e));
         }
 
         try {
             this.enableStrictTransportSecurity = FilterUtils.parseStringToBooleanDefaultingToFalse(enableStrictTransportSecurity);
         } catch (final Exception e) {
             FilterUtils.logException(LOGGER, new ServletException("Error parsing parameter [" + INIT_PARAM_ENABLE_STRICT_TRANSPORT_SECURITY
-                    + "] with value [" + enableStrictTransportSecurity + "]", e));
+                + "] with value [" + enableStrictTransportSecurity + "]", e));
         }
 
         try {
             this.enableXFrameOptions = FilterUtils.parseStringToBooleanDefaultingToFalse(enableXFrameOptions);
+            if (this.enableXFrameOptions) {
+                this.XFrameOptions = filterConfig.getInitParameter(INIT_PARAM_STRICT_XFRAME_OPTIONS);
+                if (this.XFrameOptions == null || this.XFrameOptions.isEmpty()) {
+                    this.XFrameOptions = "DENY";
+                }
+            }
         } catch (final Exception e) {
             FilterUtils.logException(LOGGER, new ServletException("Error parsing parameter [" + INIT_PARAM_ENABLE_STRICT_XFRAME_OPTIONS
-                    + "] with value [" + enableXFrameOptions + "]", e));
+                + "] with value [" + enableXFrameOptions + "]", e));
         }
 
         try {
             this.enableXSSProtection = FilterUtils.parseStringToBooleanDefaultingToFalse(enableXSSProtection);
+            if (this.enableXSSProtection) {
+                this.XSSProtection = filterConfig.getInitParameter(INIT_PARAM_STRICT_XFRAME_OPTIONS);
+                if (this.XSSProtection == null || this.XSSProtection.isEmpty()) {
+                    this.XSSProtection = "XSSProtection";
+                }
+            }
         } catch (final Exception e) {
             FilterUtils.logException(LOGGER, new ServletException("Error parsing parameter [" + INIT_PARAM_ENABLE_XSS_PROTECTION
-                    + "] with value [" + enableXSSProtection + "]", e));
+                + "] with value [" + enableXSSProtection + "]", e));
         }
 
         this.contentSecurityPolicy = filterConfig.getInitParameter(INIT_PARAM_CONTENT_SECURITY_POLICY);
@@ -170,6 +197,7 @@ public final class ResponseHeadersEnforcementFilter extends AbstractSecurityFilt
         recognizedParameterNames.add(INIT_PARAM_ENABLE_XCONTENT_OPTIONS);
         recognizedParameterNames.add(INIT_PARAM_ENABLE_STRICT_TRANSPORT_SECURITY);
         recognizedParameterNames.add(INIT_PARAM_ENABLE_STRICT_XFRAME_OPTIONS);
+        recognizedParameterNames.add(INIT_PARAM_STRICT_XFRAME_OPTIONS);
         recognizedParameterNames.add(INIT_PARAM_CONTENT_SECURITY_POLICY);
         recognizedParameterNames.add(LOGGER_HANDLER_CLASS_NAME);
         recognizedParameterNames.add(INIT_PARAM_ENABLE_XSS_PROTECTION);
@@ -178,9 +206,9 @@ public final class ResponseHeadersEnforcementFilter extends AbstractSecurityFilt
             final String initParamName = (String) initParamNames.nextElement();
             if (!recognizedParameterNames.contains(initParamName)) {
                 FilterUtils.logException(LOGGER, new ServletException("Unrecognized init parameter [" + initParamName + "].  Failing safe.  Typo" +
-                        " in the web.xml configuration? " +
-                        " Misunderstanding about the configuration "
-                        + RequestParameterPolicyEnforcementFilter.class.getSimpleName() + " expects?"));
+                    " in the web.xml configuration? " +
+                    " Misunderstanding about the configuration "
+                    + RequestParameterPolicyEnforcementFilter.class.getSimpleName() + " expects?"));
             }
         }
     }
@@ -196,13 +224,13 @@ public final class ResponseHeadersEnforcementFilter extends AbstractSecurityFilt
 
                 if (this.enableCacheControl) {
                     if (!uri.endsWith(".css")
-                            && !uri.endsWith(".js")
-                            && !uri.endsWith(".png")
-                            && !uri.endsWith(".jpg")
-                            && !uri.endsWith(".ico")
-                            && !uri.endsWith(".jpeg")
-                            && !uri.endsWith(".bmp")
-                            && !uri.endsWith(".gif")) {
+                        && !uri.endsWith(".js")
+                        && !uri.endsWith(".png")
+                        && !uri.endsWith(".jpg")
+                        && !uri.endsWith(".ico")
+                        && !uri.endsWith(".jpeg")
+                        && !uri.endsWith(".bmp")
+                        && !uri.endsWith(".gif")) {
                         httpServletResponse.addHeader("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate");
                         httpServletResponse.addHeader("Pragma", "no-cache");
                         httpServletResponse.addIntHeader("Expires", 0);
@@ -222,13 +250,13 @@ public final class ResponseHeadersEnforcementFilter extends AbstractSecurityFilt
                 }
 
                 if (this.enableXFrameOptions) {
-                    httpServletResponse.addHeader("X-Frame-Options", "DENY");
-                    LOGGER.fine("Adding X-Frame Options response headers for " + uri);
+                    httpServletResponse.addHeader("X-Frame-Options", this.XFrameOptions);
+                    LOGGER.fine("Adding X-Frame Options " + this.XFrameOptions + " response headers for [{}]" + uri);
                 }
 
                 if (this.enableXSSProtection) {
-                    httpServletResponse.addHeader("X-XSS-Protection", "1; mode=block");
-                    LOGGER.fine("Adding X-XSS Protection response headers for " + uri);
+                    httpServletResponse.addHeader("X-XSS-Protection", this.XSSProtection);
+                    LOGGER.fine("Adding X-XSS Protection " + this.XSSProtection + " response headers for " + uri);
                 }
 
                 if (this.contentSecurityPolicy != null) {
@@ -238,8 +266,8 @@ public final class ResponseHeadersEnforcementFilter extends AbstractSecurityFilt
             }
         } catch (final Exception e) {
             FilterUtils.logException(LOGGER, new ServletException(getClass().getSimpleName()
-                    + " is blocking this request. Examine the cause in" +
-                    " this stack trace to understand why.", e));
+                + " is blocking this request. Examine the cause in" +
+                " this stack trace to understand why.", e));
         }
 
         filterChain.doFilter(servletRequest, servletResponse);
