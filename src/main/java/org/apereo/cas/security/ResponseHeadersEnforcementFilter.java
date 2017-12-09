@@ -167,9 +167,9 @@ public final class ResponseHeadersEnforcementFilter extends AbstractSecurityFilt
         try {
             this.enableXSSProtection = FilterUtils.parseStringToBooleanDefaultingToFalse(enableXSSProtection);
             if (this.enableXSSProtection) {
-                this.XSSProtection = filterConfig.getInitParameter(INIT_PARAM_STRICT_XFRAME_OPTIONS);
+                this.XSSProtection = filterConfig.getInitParameter(INIT_PARAM_XSS_PROTECTION);
                 if (this.XSSProtection == null || this.XSSProtection.isEmpty()) {
-                    this.XSSProtection = "XSSProtection";
+                    this.XSSProtection = "1; mode=block";
                 }
             }
         } catch (final Exception e) {
@@ -201,6 +201,7 @@ public final class ResponseHeadersEnforcementFilter extends AbstractSecurityFilt
         recognizedParameterNames.add(INIT_PARAM_CONTENT_SECURITY_POLICY);
         recognizedParameterNames.add(LOGGER_HANDLER_CLASS_NAME);
         recognizedParameterNames.add(INIT_PARAM_ENABLE_XSS_PROTECTION);
+        recognizedParameterNames.add(INIT_PARAM_XSS_PROTECTION);
 
         while (initParamNames.hasMoreElements()) {
             final String initParamName = (String) initParamNames.nextElement();
