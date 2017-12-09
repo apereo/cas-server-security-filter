@@ -33,7 +33,7 @@
     <description>A Java Servlet Filter for applying generic security policy on incoming HTTP request parameters, implementing an application
         firewall of sorts.
     </description>
-    <version>2.0.9-SNAPSHOT</version>
+    <version>2.0.8.1</version>
     <url>http://www.apereo.org/cas</url>
     <inceptionYear>2014</inceptionYear>
 
@@ -67,7 +67,7 @@
         <connection>scm:git:git@github.com:apereo/cas-server-security-filter.git</connection>
         <developerConnection>scm:git:git@github.com:apereo/cas-server-security-filter.git</developerConnection>
         <url>https://github.com/apereo/cas-server-security-filter</url>
-        <tag>HEAD</tag>
+        <tag>cas-server-security-filter-2.0.8.1</tag>
     </scm>
 
     <dependencies>
