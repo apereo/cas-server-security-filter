@@ -7,6 +7,32 @@ This project provides blunt generic Java Servlet filters suitable for patching-i
 ## Build [![Build Status](https://api.travis-ci.org/apereo/cas-server-security-filter.png)](http://travis-ci.org/apereo/cas-server-security-filter)
 
 
+AddResponseHeadersFilter for patching CAS client usages
+----------------------------------------------------------------------
+
+This filter allows you to inject custom header names into the response. Design the headers as init params shown below:
+
+```xml
+<filter>
+  <filter-name>requestParameterFilter</filter-name>
+  <filter-class>org.apereo.cas.security.AddResponseHeadersFilter</filter-class>
+  <init-param>
+    <param-name>headerName1</param-name>
+    <param-value>headerValue1</param-value>
+  </init-param>
+    <init-param>
+    <param-name>headerName2</param-name>
+    <param-value>headerValue2</param-value>
+  </init-param>
+</filter>
+...
+<filter-mapping>
+  <filter-name>requestParameterFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+</filter-mapping>
+```
+
+
 ResponseHeadersEnforcementFilter for patching CAS client usages
 ----------------------------------------------------------------------
 
