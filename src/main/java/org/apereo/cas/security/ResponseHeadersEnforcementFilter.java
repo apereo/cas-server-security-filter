@@ -221,57 +221,88 @@ public final class ResponseHeadersEnforcementFilter extends AbstractSecurityFilt
             if (servletResponse instanceof HttpServletResponse) {
                 final HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
                 final HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
-                final String uri = httpServletRequest.getRequestURI();
-
+                
                 if (this.enableCacheControl) {
-                    if (!uri.endsWith(".css")
-                        && !uri.endsWith(".js")
-                        && !uri.endsWith(".png")
-                        && !uri.endsWith(".jpg")
-                        && !uri.endsWith(".ico")
-                        && !uri.endsWith(".jpeg")
-                        && !uri.endsWith(".bmp")
-                        && !uri.endsWith(".gif")) {
-                        httpServletResponse.addHeader("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate");
-                        httpServletResponse.addHeader("Pragma", "no-cache");
-                        httpServletResponse.addIntHeader("Expires", 0);
-                        LOGGER.fine("Adding Cache Control response headers for " + uri);
-                    }
+                    insertCacheControlHeader(httpServletResponse, httpServletRequest);
                 }
 
-                if (this.enableStrictTransportSecurity && servletRequest.isSecure()) {
-                    // allow for 6 months; value is in seconds
-                    httpServletResponse.addHeader("Strict-Transport-Security", "max-age=15768000 ; includeSubDomains");
-                    LOGGER.fine("Adding HSTS response headers for " + uri);
+                if (this.enableStrictTransportSecurity) {
+                    insertStrictTransportSecurityHeader(httpServletResponse, httpServletRequest);
                 }
 
                 if (this.enableXContentTypeOptions) {
-                    httpServletResponse.addHeader("X-Content-Type-Options", "nosniff");
-                    LOGGER.fine("Adding X-Content Type response headers for " + uri);
+                    insertXContextTypeOptionsHeader(httpServletResponse, httpServletRequest);
                 }
 
                 if (this.enableXFrameOptions) {
-                    httpServletResponse.addHeader("X-Frame-Options", this.XFrameOptions);
-                    LOGGER.fine("Adding X-Frame Options " + this.XFrameOptions + " response headers for [{}]" + uri);
+                    insertXFrameOptionsHeader(httpServletResponse, httpServletRequest);
                 }
 
                 if (this.enableXSSProtection) {
-                    httpServletResponse.addHeader("X-XSS-Protection", this.XSSProtection);
-                    LOGGER.fine("Adding X-XSS Protection " + this.XSSProtection + " response headers for " + uri);
+                    inseryXSSProtectionHeader(httpServletResponse, httpServletRequest);
                 }
 
                 if (this.contentSecurityPolicy != null) {
-                    httpServletResponse.addHeader("Content-Security-Policy", this.contentSecurityPolicy);
-                    LOGGER.fine("Adding Content-Security-Policy response header " + this.contentSecurityPolicy + " for " + uri);
+                    insertContentSecurityPolicyHeader(httpServletResponse, httpServletRequest);
                 }
             }
         } catch (final Exception e) {
             FilterUtils.logException(LOGGER, new ServletException(getClass().getSimpleName()
-                + " is blocking this request. Examine the cause in" +
-                " this stack trace to understand why.", e));
+                + " is blocking this request. Examine the cause in this stack trace to understand why.", e));
         }
 
         filterChain.doFilter(servletRequest, servletResponse);
+    }
+
+    protected void insertContentSecurityPolicyHeader(final HttpServletResponse httpServletResponse, final HttpServletRequest httpServletRequest) {
+        final String uri = httpServletRequest.getRequestURI();
+        httpServletResponse.addHeader("Content-Security-Policy", this.contentSecurityPolicy);
+        LOGGER.fine("Adding Content-Security-Policy response header " + this.contentSecurityPolicy + " for " + uri);
+    }
+
+    protected void inseryXSSProtectionHeader(final HttpServletResponse httpServletResponse, final HttpServletRequest httpServletRequest) {
+        final String uri = httpServletRequest.getRequestURI();
+        httpServletResponse.addHeader("X-XSS-Protection", this.XSSProtection);
+        LOGGER.fine("Adding X-XSS Protection " + this.XSSProtection + " response headers for " + uri);
+    }
+
+    protected void insertXFrameOptionsHeader(final HttpServletResponse httpServletResponse, final HttpServletRequest httpServletRequest) {
+        final String uri = httpServletRequest.getRequestURI();
+        httpServletResponse.addHeader("X-Frame-Options", this.XFrameOptions);
+        LOGGER.fine("Adding X-Frame Options " + this.XFrameOptions + " response headers for [{}]" + uri);
+    }
+
+    protected void insertXContextTypeOptionsHeader(final HttpServletResponse httpServletResponse, final HttpServletRequest httpServletRequest) {
+        final String uri = httpServletRequest.getRequestURI();
+        httpServletResponse.addHeader("X-Content-Type-Options", "nosniff");
+        LOGGER.fine("Adding X-Content Type response headers for " + uri);
+    }
+
+    protected void insertCacheControlHeader(final HttpServletResponse httpServletResponse, final HttpServletRequest httpServletRequest) {
+        final String uri = httpServletRequest.getRequestURI();
+        if (!uri.endsWith(".css")
+            && !uri.endsWith(".js")
+            && !uri.endsWith(".png")
+            && !uri.endsWith(".txt")
+            && !uri.endsWith(".jpg")
+            && !uri.endsWith(".ico")
+            && !uri.endsWith(".jpeg")
+            && !uri.endsWith(".bmp")
+            && !uri.endsWith(".gif")) {
+            httpServletResponse.addHeader("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate");
+            httpServletResponse.addHeader("Pragma", "no-cache");
+            httpServletResponse.addIntHeader("Expires", 0);
+            LOGGER.fine("Adding Cache Control response headers for " + uri);
+        }
+    }
+
+    protected void insertStrictTransportSecurityHeader(final HttpServletResponse httpServletResponse, final HttpServletRequest httpServletRequest) {
+        if (httpServletRequest.isSecure()) {
+            final String uri = httpServletRequest.getRequestURI();
+            // allow for 6 months; value is in seconds
+            httpServletResponse.addHeader("Strict-Transport-Security", "max-age=15768000 ; includeSubDomains");
+            LOGGER.fine("Adding HSTS response headers for " + uri);
+        }
     }
 
     @Override
