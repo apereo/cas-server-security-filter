@@ -231,7 +231,7 @@ public class ResponseHeadersEnforcementFilter extends AbstractSecurityFilter imp
                 }
 
                 if (this.enableXContentTypeOptions) {
-                    insertXContextTypeOptionsHeader(httpServletResponse, httpServletRequest);
+                    insertXContentTypeOptionsHeader(httpServletResponse, httpServletRequest);
                 }
 
                 if (this.enableXFrameOptions) {
@@ -272,7 +272,7 @@ public class ResponseHeadersEnforcementFilter extends AbstractSecurityFilter imp
         LOGGER.fine("Adding X-Frame Options " + this.XFrameOptions + " response headers for [{}]" + uri);
     }
 
-    protected void insertXContextTypeOptionsHeader(final HttpServletResponse httpServletResponse, final HttpServletRequest httpServletRequest) {
+    protected void insertXContentTypeOptionsHeader(final HttpServletResponse httpServletResponse, final HttpServletRequest httpServletRequest) {
         final String uri = httpServletRequest.getRequestURI();
         httpServletResponse.addHeader("X-Content-Type-Options", "nosniff");
         LOGGER.fine("Adding X-Content Type response headers for " + uri);
