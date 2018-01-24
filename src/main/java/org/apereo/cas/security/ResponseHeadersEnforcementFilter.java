@@ -221,30 +221,13 @@ public class ResponseHeadersEnforcementFilter extends AbstractSecurityFilter imp
             if (servletResponse instanceof HttpServletResponse) {
                 final HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
                 final HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
-                
-                if (this.enableCacheControl) {
-                    insertCacheControlHeader(httpServletResponse, httpServletRequest);
-                }
 
-                if (this.enableStrictTransportSecurity) {
-                    insertStrictTransportSecurityHeader(httpServletResponse, httpServletRequest);
-                }
-
-                if (this.enableXContentTypeOptions) {
-                    insertXContentTypeOptionsHeader(httpServletResponse, httpServletRequest);
-                }
-
-                if (this.enableXFrameOptions) {
-                    insertXFrameOptionsHeader(httpServletResponse, httpServletRequest);
-                }
-
-                if (this.enableXSSProtection) {
-                    insertXSSProtectionHeader(httpServletResponse, httpServletRequest);
-                }
-
-                if (this.contentSecurityPolicy != null) {
-                    insertContentSecurityPolicyHeader(httpServletResponse, httpServletRequest);
-                }
+                insertCacheControlHeader(httpServletResponse, httpServletRequest);
+                insertStrictTransportSecurityHeader(httpServletResponse, httpServletRequest);
+                insertXContentTypeOptionsHeader(httpServletResponse, httpServletRequest);
+                insertXFrameOptionsHeader(httpServletResponse, httpServletRequest);
+                insertXSSProtectionHeader(httpServletResponse, httpServletRequest);
+                insertContentSecurityPolicyHeader(httpServletResponse, httpServletRequest);
             }
         } catch (final Exception e) {
             FilterUtils.logException(LOGGER, new ServletException(getClass().getSimpleName()
@@ -255,30 +238,50 @@ public class ResponseHeadersEnforcementFilter extends AbstractSecurityFilter imp
     }
 
     protected void insertContentSecurityPolicyHeader(final HttpServletResponse httpServletResponse, final HttpServletRequest httpServletRequest) {
+        if (this.contentSecurityPolicy == null) {
+            return;
+        }
+
         final String uri = httpServletRequest.getRequestURI();
         httpServletResponse.addHeader("Content-Security-Policy", this.contentSecurityPolicy);
         LOGGER.fine("Adding Content-Security-Policy response header " + this.contentSecurityPolicy + " for " + uri);
     }
 
     protected void insertXSSProtectionHeader(final HttpServletResponse httpServletResponse, final HttpServletRequest httpServletRequest) {
+        if (!this.enableXSSProtection) {
+            return;
+        }
         final String uri = httpServletRequest.getRequestURI();
         httpServletResponse.addHeader("X-XSS-Protection", this.XSSProtection);
         LOGGER.fine("Adding X-XSS Protection " + this.XSSProtection + " response headers for " + uri);
     }
 
     protected void insertXFrameOptionsHeader(final HttpServletResponse httpServletResponse, final HttpServletRequest httpServletRequest) {
+
+        if (!this.enableXFrameOptions) {
+            return;
+        }
+
         final String uri = httpServletRequest.getRequestURI();
         httpServletResponse.addHeader("X-Frame-Options", this.XFrameOptions);
         LOGGER.fine("Adding X-Frame Options " + this.XFrameOptions + " response headers for [{}]" + uri);
     }
 
     protected void insertXContentTypeOptionsHeader(final HttpServletResponse httpServletResponse, final HttpServletRequest httpServletRequest) {
+        if (!this.enableXContentTypeOptions) {
+            return;
+        }
+
         final String uri = httpServletRequest.getRequestURI();
         httpServletResponse.addHeader("X-Content-Type-Options", "nosniff");
         LOGGER.fine("Adding X-Content Type response headers for " + uri);
     }
 
     protected void insertCacheControlHeader(final HttpServletResponse httpServletResponse, final HttpServletRequest httpServletRequest) {
+        if (!this.enableCacheControl) {
+            return;
+        }
+
         final String uri = httpServletRequest.getRequestURI();
         if (!uri.endsWith(".css")
             && !uri.endsWith(".js")
@@ -297,6 +300,10 @@ public class ResponseHeadersEnforcementFilter extends AbstractSecurityFilter imp
     }
 
     protected void insertStrictTransportSecurityHeader(final HttpServletResponse httpServletResponse, final HttpServletRequest httpServletRequest) {
+        if (!this.enableStrictTransportSecurity) {
+            return;
+        }
+
         if (httpServletRequest.isSecure()) {
             final String uri = httpServletRequest.getRequestURI();
             // allow for 6 months; value is in seconds
