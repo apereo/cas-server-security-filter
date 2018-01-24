@@ -239,7 +239,7 @@ public class ResponseHeadersEnforcementFilter extends AbstractSecurityFilter imp
                 }
 
                 if (this.enableXSSProtection) {
-                    inseryXSSProtectionHeader(httpServletResponse, httpServletRequest);
+                    insertXSSProtectionHeader(httpServletResponse, httpServletRequest);
                 }
 
                 if (this.contentSecurityPolicy != null) {
@@ -260,7 +260,7 @@ public class ResponseHeadersEnforcementFilter extends AbstractSecurityFilter imp
         LOGGER.fine("Adding Content-Security-Policy response header " + this.contentSecurityPolicy + " for " + uri);
     }
 
-    protected void inseryXSSProtectionHeader(final HttpServletResponse httpServletResponse, final HttpServletRequest httpServletRequest) {
+    protected void insertXSSProtectionHeader(final HttpServletResponse httpServletResponse, final HttpServletRequest httpServletRequest) {
         final String uri = httpServletRequest.getRequestURI();
         httpServletResponse.addHeader("X-XSS-Protection", this.XSSProtection);
         LOGGER.fine("Adding X-XSS Protection " + this.XSSProtection + " response headers for " + uri);
