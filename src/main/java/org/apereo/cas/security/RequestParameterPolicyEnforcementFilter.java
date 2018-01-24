@@ -81,7 +81,7 @@ import java.util.logging.Logger;
  *
  * @since cas-security-filter 1.1
  */
-public final class RequestParameterPolicyEnforcementFilter extends AbstractSecurityFilter implements Filter {
+public class RequestParameterPolicyEnforcementFilter extends AbstractSecurityFilter implements Filter {
 
     private static final Logger LOGGER = Logger.getLogger(RequestParameterPolicyEnforcementFilter.class.getName());
 

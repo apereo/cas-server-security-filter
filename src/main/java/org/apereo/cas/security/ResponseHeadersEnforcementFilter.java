@@ -48,7 +48,7 @@ import java.util.logging.Logger;
  * @author Misagh Moayyed
  * @since 2.0.4
  */
-public final class ResponseHeadersEnforcementFilter extends AbstractSecurityFilter implements Filter {
+public class ResponseHeadersEnforcementFilter extends AbstractSecurityFilter implements Filter {
     private static final Logger LOGGER = Logger.getLogger(ResponseHeadersEnforcementFilter.class.getName());
 
     private static final String INIT_PARAM_ENABLE_CACHE_CONTROL = "enableCacheControl";

@@ -47,7 +47,7 @@ import java.util.logging.Logger;
  * @author Misagh Moayyed
  * @since 2.0.4
  */
-public final class AddResponseHeadersFilter extends AbstractSecurityFilter implements Filter {
+public class AddResponseHeadersFilter extends AbstractSecurityFilter implements Filter {
     private static final Logger LOGGER = Logger.getLogger(AddResponseHeadersFilter.class.getName());
 
     private Map<String, String> headersMap = new LinkedHashMap<>();

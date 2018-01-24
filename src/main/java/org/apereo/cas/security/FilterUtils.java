@@ -31,7 +31,7 @@ import java.util.logging.Logger;
  * @author Misagh Moayyed
  * @since 2.1
  */
-public final class FilterUtils {
+public class FilterUtils {
     private static final Logger LOGGER = Logger.getLogger(FilterUtils.class.getName());
 
     public static boolean throwOnErrors;
