@@ -153,11 +153,9 @@ public class ResponseHeadersEnforcementFilter extends AbstractSecurityFilter imp
 
         try {
             this.enableXFrameOptions = FilterUtils.parseStringToBooleanDefaultingToFalse(enableXFrameOptions);
-            if (this.enableXFrameOptions) {
-                this.XFrameOptions = filterConfig.getInitParameter(INIT_PARAM_STRICT_XFRAME_OPTIONS);
-                if (this.XFrameOptions == null || this.XFrameOptions.isEmpty()) {
-                    this.XFrameOptions = "DENY";
-                }
+            this.XFrameOptions = filterConfig.getInitParameter(INIT_PARAM_STRICT_XFRAME_OPTIONS);
+            if (this.XFrameOptions == null || this.XFrameOptions.isEmpty()) {
+                this.XFrameOptions = "DENY";
             }
         } catch (final Exception e) {
             FilterUtils.logException(LOGGER, new ServletException("Error parsing parameter [" + INIT_PARAM_ENABLE_STRICT_XFRAME_OPTIONS
@@ -166,11 +164,9 @@ public class ResponseHeadersEnforcementFilter extends AbstractSecurityFilter imp
 
         try {
             this.enableXSSProtection = FilterUtils.parseStringToBooleanDefaultingToFalse(enableXSSProtection);
-            if (this.enableXSSProtection) {
-                this.XSSProtection = filterConfig.getInitParameter(INIT_PARAM_XSS_PROTECTION);
-                if (this.XSSProtection == null || this.XSSProtection.isEmpty()) {
-                    this.XSSProtection = "1; mode=block";
-                }
+            this.XSSProtection = filterConfig.getInitParameter(INIT_PARAM_XSS_PROTECTION);
+            if (this.XSSProtection == null || this.XSSProtection.isEmpty()) {
+                this.XSSProtection = "1; mode=block";
             }
         } catch (final Exception e) {
             FilterUtils.logException(LOGGER, new ServletException("Error parsing parameter [" + INIT_PARAM_ENABLE_XSS_PROTECTION
