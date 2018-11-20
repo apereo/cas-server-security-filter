@@ -325,7 +325,7 @@ public class ResponseHeadersEnforcementFilter extends AbstractSecurityFilter imp
         insertCacheControlHeader(httpServletResponse, httpServletRequest);
     }
 
-    private void insertCacheControlHeader(final HttpServletResponse httpServletResponse, final HttpServletRequest httpServletRequest) {
+    protected void insertCacheControlHeader(final HttpServletResponse httpServletResponse, final HttpServletRequest httpServletRequest) {
         insertCacheControlHeader(httpServletResponse, httpServletRequest, this.cacheControlHeader);
     }
 
