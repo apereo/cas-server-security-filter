@@ -38,7 +38,7 @@ import java.util.logging.Logger;
 public class FilterUtils {
     private static final Logger LOGGER = Logger.getLogger(FilterUtils.class.getName());
 
-    public static boolean throwOnErrors;
+    public static boolean throwOnErrors; // Java boolean defaults to false.
 
     private FilterUtils() {
     }
