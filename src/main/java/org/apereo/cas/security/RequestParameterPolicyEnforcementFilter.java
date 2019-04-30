@@ -130,6 +130,12 @@ public class RequestParameterPolicyEnforcementFilter extends AbstractSecurityFil
     public static final String ONLY_POST_PARAMETERS = "onlyPostParameters";
 
     /**
+     * The name of the optional Filter init-param specifying that configuration
+     * errors should be fatal.
+     */
+    public static final String FAIL_SAFE = "failSafe";
+
+    /**
      * Set of parameter names to check.
      * Empty set represents special behavior of checking all parameters.
      */
@@ -320,6 +326,7 @@ public class RequestParameterPolicyEnforcementFilter extends AbstractSecurityFil
         recognizedParameterNames.add(PARAMETERS_TO_CHECK);
         recognizedParameterNames.add(ONLY_POST_PARAMETERS);
         recognizedParameterNames.add(CHARACTERS_TO_FORBID);
+        recognizedParameterNames.add(FAIL_SAFE);
         recognizedParameterNames.add(LOGGER_HANDLER_CLASS_NAME);
 
         while (initParamNames.hasMoreElements()) {
