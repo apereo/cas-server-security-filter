@@ -210,9 +210,18 @@ public class RequestParameterPolicyEnforcementFilter extends AbstractSecurityFil
     @Override
     public void init(final FilterConfig filterConfig) throws ServletException {
 
-        
+
             FilterUtils.configureLogging(getLoggerHandlerClassName(), LOGGER);
-        
+
+        // config failSafe first because specifies consequencesn of subsequent
+        // config errors
+        final String failSafeParam = filterConfig.getInitParameter(FAIL_SAFE);
+
+        if (null != failSafeParam) {
+          setFailSafe(
+            FilterUtils.parseStringToBooleanDefaultingToFalse(failSafeParam));
+        }
+
         // verify there are no init parameters configured that are not recognized
         // since an unrecognized init param might be the adopter trying to configure this filter in an important way
         // and accidentally ignoring that intent might have security implications.
