@@ -125,6 +125,61 @@ public final class RequestParameterPolicyEnforcementFilterTests {
     }
 
     @Test
+    public void testSettingFailSafeTrueFromInitParam() throws Exception{
+      // precondition
+      FilterUtils.setThrowOnErrors(false);
+
+      // build test objects
+      final RequestParameterPolicyEnforcementFilter filter = new RequestParameterPolicyEnforcementFilter();
+
+      // mock up filter config.
+      final Set<String> initParameterNames = new HashSet<String>();
+      initParameterNames.add(RequestParameterPolicyEnforcementFilter.FAIL_SAFE);
+      final Enumeration parameterNamesEnumeration = Collections.enumeration(initParameterNames);
+
+      final FilterConfig filterConfig = mock(FilterConfig.class);
+      when(filterConfig.getInitParameterNames()).thenReturn(parameterNamesEnumeration);
+
+      when(filterConfig.getInitParameter(RequestParameterPolicyEnforcementFilter.FAIL_SAFE))
+              .thenReturn("true");
+
+      // behavior under test
+      filter.init(filterConfig);
+
+      // assertion
+      assertTrue(FilterUtils.throwOnErrors);
+    }
+
+    @Test
+    public void testSettingFailSafeFalseFromInitParam() throws Exception{
+      // precondition
+      FilterUtils.setThrowOnErrors(true);
+
+      // build test objects
+      final RequestParameterPolicyEnforcementFilter filter = new RequestParameterPolicyEnforcementFilter();
+
+      // mock up filter config.
+      final Set<String> initParameterNames = new HashSet<String>();
+      initParameterNames.add(RequestParameterPolicyEnforcementFilter.FAIL_SAFE);
+      final Enumeration parameterNamesEnumeration = Collections.enumeration(initParameterNames);
+
+      final FilterConfig filterConfig = mock(FilterConfig.class);
+      when(filterConfig.getInitParameterNames()).thenReturn(parameterNamesEnumeration);
+
+      when(filterConfig.getInitParameter(RequestParameterPolicyEnforcementFilter.FAIL_SAFE))
+              .thenReturn("false");
+
+      // behavior under test
+      filter.init(filterConfig);
+
+      // assertion
+      assertFalse(FilterUtils.throwOnErrors);
+
+      // clean up
+      FilterUtils.setThrowOnErrors(true);
+    }
+
+    @Test
     public void configureSlf4jLogging() throws ServletException {
         final RequestParameterPolicyEnforcementFilter filter = new RequestParameterPolicyEnforcementFilter();
 
