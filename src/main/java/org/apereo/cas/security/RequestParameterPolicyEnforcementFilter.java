@@ -67,6 +67,15 @@ import java.util.logging.Logger;
  * By default (when "onlyPostParameters" is not set), the filter does not limit request parameters
  * to only POST requests.
  * <p>
+ * You can set FilterUtils.throwOnErrors, and so whether configuration errors
+ * cause filter init to fail, by setting the init-param "failSafe". Setting
+ * failSafe to true makes configuration errors fatal thereby avoiding "unsafe"
+ * partially configured filter states. Setting failSafe to false sets
+ * FilterUtils.throwOnErrors to false (its default value).
+ * <p>
+ * NOTE: FilterUtils is a stateful static singleton service. Setting "failSafe"
+ * configures FilterUtils globally.
+ * <p>
  * Setting any other init parameter other than these recognized by this Filter will fail Filter initialization.  This
  * is to protect the adopter from typos or misunderstandings in web.xml configuration such that an intended
  * configuration might not have taken effect, since that might have security implications.
@@ -85,10 +94,11 @@ import java.util.logging.Logger;
  * This Filter is written to have no external .jar dependencies aside from the Servlet API necessary to be a Filter.
  * <p>WARNING: Be sure that either FilterUtils throwOnErrors is set to true (not
  * its default value) or that you are reliably monitoring logs for SEVERE level
- * messages, so that you reliably notice if this filter is misconfigured. If
- * FilterUtils throwOnErrors is false (its default value), this Filter can init
- * in inconsistent configuration states. This is what is meant by
- * "may fail filter initialization" above -- it'll fail only if FilterUtils
+ * messages, so that you reliably notice if this filter is misconfigured. You
+ * can set FilterUtils throwOnErrors by setting the "failSafe" init-param on
+ * this filter. If FilterUtils throwOnErrors is false (its default value), this
+ * Filter can init in inconsistent configuration states. This is what is meant
+ * by "may fail filter initialization" above -- it'll fail only if FilterUtils
  * throwOnError is true (not its default configuration), otherwise it will just
  * log an exception.
  *
@@ -213,7 +223,7 @@ public class RequestParameterPolicyEnforcementFilter extends AbstractSecurityFil
 
             FilterUtils.configureLogging(getLoggerHandlerClassName(), LOGGER);
 
-        // config failSafe first because specifies consequencesn of subsequent
+        // config failSafe first because specifies consequences of subsequent
         // config errors
         final String failSafeParam = filterConfig.getInitParameter(FAIL_SAFE);
 
