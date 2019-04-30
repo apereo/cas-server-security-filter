@@ -76,8 +76,6 @@ import java.util.logging.Logger;
  * parameters.  It might come in handy the next time this kind of issue arises.
  * <p>
  * This Filter is written to have no external .jar dependencies aside from the Servlet API necessary to be a Filter.
- * <p>
- * This class is declared final because it is not designed for extension.
  *
  * @since cas-security-filter 1.1
  */
