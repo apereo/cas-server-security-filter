@@ -18,6 +18,7 @@
  */
 package org.apereo.cas.security;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
@@ -55,12 +56,13 @@ public final class RequestParameterPolicyEnforcementFilterTests {
 
     /* ========================================================================================================== */
 
+    @Before
+    public void beforeTests() {
+      FilterUtils.setThrowOnErrors(true);
+    }
+
     /* Tests for the Filter as a whole.
      */
-
-    static {
-        FilterUtils.setThrowOnErrors(true);
-    }
 
     /**
      * Test that setting failSafe projects through to the FilterUtils static
@@ -143,6 +145,9 @@ public final class RequestParameterPolicyEnforcementFilterTests {
       when(filterConfig.getInitParameter(RequestParameterPolicyEnforcementFilter.FAIL_SAFE))
               .thenReturn("true");
 
+      // precondition
+      FilterUtils.setThrowOnErrors(false);
+
       // behavior under test
       filter.init(filterConfig);
 
@@ -152,8 +157,6 @@ public final class RequestParameterPolicyEnforcementFilterTests {
 
     @Test
     public void testSettingFailSafeFalseFromInitParam() throws Exception{
-      // precondition
-      FilterUtils.setThrowOnErrors(true);
 
       // build test objects
       final RequestParameterPolicyEnforcementFilter filter = new RequestParameterPolicyEnforcementFilter();
@@ -174,9 +177,6 @@ public final class RequestParameterPolicyEnforcementFilterTests {
 
       // assertion
       assertFalse(FilterUtils.throwOnErrors);
-
-      // clean up
-      FilterUtils.setThrowOnErrors(true);
     }
 
     @Test
