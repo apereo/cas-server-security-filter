@@ -18,6 +18,7 @@
  */
 package org.apereo.cas.security;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
@@ -55,11 +56,30 @@ public final class RequestParameterPolicyEnforcementFilterTests {
 
     /* ========================================================================================================== */
 
+    @Before
+    public void beforeTests() {
+      FilterUtils.setThrowOnErrors(true);
+    }
+
     /* Tests for the Filter as a whole.
      */
 
-    static {
-        FilterUtils.setThrowOnErrors(true);
+    /**
+     * Test that setting failSafe projects through to the FilterUtils static
+     * singleton service.
+     */
+    @Test
+    public void testSetFailSafe() {
+      final RequestParameterPolicyEnforcementFilter filter =
+        new RequestParameterPolicyEnforcementFilter();
+
+      filter.setFailSafe(false);
+      assertFalse("Setting failSafe false should set FilterUtils.throwOnErrors to false.",
+        FilterUtils.throwOnErrors);
+
+      filter.setFailSafe(true);
+      assertTrue("Setting failSafe true should set FilterUtils.throwOnErrors to true.",
+      FilterUtils.throwOnErrors);
     }
 
     /**
@@ -104,6 +124,59 @@ public final class RequestParameterPolicyEnforcementFilterTests {
                 .thenReturn(null);
 
         filter.init(filterConfig);
+    }
+
+    @Test
+    public void testSettingFailSafeTrueFromInitParam() throws Exception{
+      // precondition
+      FilterUtils.setThrowOnErrors(false);
+
+      // build test objects
+      final RequestParameterPolicyEnforcementFilter filter = new RequestParameterPolicyEnforcementFilter();
+
+      // mock up filter config.
+      final Set<String> initParameterNames = new HashSet<String>();
+      initParameterNames.add(RequestParameterPolicyEnforcementFilter.FAIL_SAFE);
+      final Enumeration parameterNamesEnumeration = Collections.enumeration(initParameterNames);
+
+      final FilterConfig filterConfig = mock(FilterConfig.class);
+      when(filterConfig.getInitParameterNames()).thenReturn(parameterNamesEnumeration);
+
+      when(filterConfig.getInitParameter(RequestParameterPolicyEnforcementFilter.FAIL_SAFE))
+              .thenReturn("true");
+
+      // precondition
+      FilterUtils.setThrowOnErrors(false);
+
+      // behavior under test
+      filter.init(filterConfig);
+
+      // assertion
+      assertTrue(FilterUtils.throwOnErrors);
+    }
+
+    @Test
+    public void testSettingFailSafeFalseFromInitParam() throws Exception{
+
+      // build test objects
+      final RequestParameterPolicyEnforcementFilter filter = new RequestParameterPolicyEnforcementFilter();
+
+      // mock up filter config.
+      final Set<String> initParameterNames = new HashSet<String>();
+      initParameterNames.add(RequestParameterPolicyEnforcementFilter.FAIL_SAFE);
+      final Enumeration parameterNamesEnumeration = Collections.enumeration(initParameterNames);
+
+      final FilterConfig filterConfig = mock(FilterConfig.class);
+      when(filterConfig.getInitParameterNames()).thenReturn(parameterNamesEnumeration);
+
+      when(filterConfig.getInitParameter(RequestParameterPolicyEnforcementFilter.FAIL_SAFE))
+              .thenReturn("false");
+
+      // behavior under test
+      filter.init(filterConfig);
+
+      // assertion
+      assertFalse(FilterUtils.throwOnErrors);
     }
 
     @Test

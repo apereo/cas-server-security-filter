@@ -159,6 +159,31 @@ Configuration Examples
 
 In this configuration, the Filter will scrutinize all request parameters, requiring that they not be multi-valued, requiring that they not contain any of `% ? # &`, and allowing request parameters regardless of whether the request is of type POST or not.
 
+### Configuring to fail safely
+
+```xml
+<filter>
+  <filter-name>requestParameterFilter</filter-name>
+  <filter-class>org.apereo.cas.security.RequestParameterPolicyEnforcementFilter</filter-class>
+  <init-param>
+    <param-name>failSafe</param-name>
+    <param-value>true</param-value>
+  </init-param>
+</filter>
+...
+<filter-mapping>
+  <filter-name>requestParameterFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+</filter-mapping>
+ ```
+
+ In this configuration, the Filter will fail filter initialization if there are
+ any configuration errors. There are not configuration errors here, so it will
+ not so fail. But this makes a safer starting point from which to add other
+ configuration, since if the filter detects errors in any of that additional
+ configuration, filter init will fail rather than the context initing with the
+ filter not providing the protection that you may have intended it to provide.
+
 ### Allow multi-valued parameters
 
 Multi-valued parameters are essential for supporting forms with multi-choice selectors where the form submission is legitimately represented as repeated parameter names with different values.
