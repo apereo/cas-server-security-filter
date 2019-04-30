@@ -63,6 +63,24 @@ public final class RequestParameterPolicyEnforcementFilterTests {
     }
 
     /**
+     * Test that setting failSafe projects through to the FilterUtils static
+     * singleton service.
+     */
+    @Test
+    public void testSetFailSafe() {
+      final RequestParameterPolicyEnforcementFilter filter =
+        new RequestParameterPolicyEnforcementFilter();
+
+      filter.setFailSafe(false);
+      assertFalse("Setting failSafe false should set FilterUtils.throwOnErrors to false.",
+        FilterUtils.throwOnErrors);
+
+      filter.setFailSafe(true);
+      assertTrue("Setting failSafe true should set FilterUtils.throwOnErrors to true.",
+      FilterUtils.throwOnErrors);
+    }
+
+    /**
      * Test that the Filter throws on init when unrecognized Filter init-param.
      * @throws RuntimeException on test success.
      */

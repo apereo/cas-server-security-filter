@@ -171,6 +171,26 @@ public class RequestParameterPolicyEnforcementFilter extends AbstractSecurityFil
         this.onlyPostParameters = onlyPostParameters;
     }
 
+    /**
+     * Configure whether the filter should fail safe. Fail safe in this context
+     * means failing to init rather than initing with a configuration that's
+     * ambiguous and so may not be providing the intended protections. Fail
+     * dangerous in this context means initing regardless of configuration
+     * errors, which won't prevent the servlet context from initing, but which
+     * might init a servlet context without the protections intended by
+     * declaring and mapping this filter.
+     * <p>
+     * NOTE: This sets the throwOnErrors property of static singleton service
+     * FilterUtils. This configuration is global for all uses of FilterUtils,
+     * e.g. for usages in other filters.
+     * @param failSafe
+     */
+    public void setFailSafe(boolean failSafe) {
+      // if configured to fail safe, make configuration errors fatal so that
+      // this filter will not init() with known-problematic configuration.
+      FilterUtils.setThrowOnErrors(failSafe);
+    }
+
     public RequestParameterPolicyEnforcementFilter() {
         FilterUtils.configureLogging(getLoggerHandlerClassName(), LOGGER);
     }
