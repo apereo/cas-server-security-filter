@@ -99,8 +99,9 @@ Configuration options
 
 This Filter is optionally configured via Filter `init-param` in `web.xml`.
 
-In general the Filter is very persnickety about init-params, such that if you give it a configuration that the Filter is not totally sure it understands, it will log
-an exception.
+In general the Filter is very persnickety about init-params, such that if you
+give it a configuration that the Filter is not totally sure it understands, it
+will log an exception.
 
 **WARNING**: By default bad filter configuration will NOT fail filter
 initialization, and so it is possible to inadvertently configure the filter to
