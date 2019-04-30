@@ -99,7 +99,18 @@ Configuration options
 
 This Filter is optionally configured via Filter `init-param` in `web.xml`.
 
-In general the Filter is very persnickety about init-params, such that if you give it a configuration that the Filter is not totally sure it understands, it will fail Filter initialization.
+In general the Filter is very persnickety about init-params, such that if you
+give it a configuration that the Filter is not totally sure it understands, it
+will log an exception.
+
+**WARNING**: By default bad filter configuration will NOT fail filter
+initialization, and so it is possible to inadvertently configure the filter to
+e.g. have no effect. You SHOULD either be sure to monitor the logs for the
+SEVERE messages that will be logged if this filter believes its configuration is
+problematic, or set `FilterUtils.throwOnErrors` to true so that bad filter
+config fails Filter init and so fails context init, guaranteeing that you do not
+bring up an application intending to protect it with this filter but not
+successfully doing so due to configuration errors the filter is aware of.
 
 ### parametersToCheck init-param
 

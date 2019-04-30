@@ -28,13 +28,17 @@ import java.util.logging.Logger;
 /**
  * Utility classes.
  *
+ * Stateful: configure with whether logException should (re-)throw the logged
+ * exception, wrapping it in a new RuntimeException, via
+ * setThrowOnErrors(boolean). Defaults to false.
+ *
  * @author Misagh Moayyed
  * @since 2.1
  */
 public class FilterUtils {
     private static final Logger LOGGER = Logger.getLogger(FilterUtils.class.getName());
 
-    public static boolean throwOnErrors;
+    public static boolean throwOnErrors; // Java boolean defaults to false.
 
     private FilterUtils() {
     }
