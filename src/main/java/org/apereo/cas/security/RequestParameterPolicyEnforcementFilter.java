@@ -60,6 +60,13 @@ import java.util.logging.Logger;
  * may fail filter initialization.  The default set of characters disallowed is percent, hash, question mark,
  * and ampersand.
  * <p>
+ * You can limit a set of request parameters to only be allowed on requests of type POST by
+ * setting the init-param "onlyPostParameters" to a whitespace-delimited list of parameters.
+ * Unlike "parametersToCheck", this does not support the special value "*".
+ * Setting  "onlyPostParameters" to a blank value fails filter initialization.
+ * By default (when "onlyPostParameters" is not set), the filter does not limit request parameters
+ * to only POST requests.
+ * <p>
  * Setting any other init parameter other than these recognized by this Filter will fail Filter initialization.  This
  * is to protect the adopter from typos or misunderstandings in web.xml configuration such that an intended
  * configuration might not have taken effect, since that might have security implications.

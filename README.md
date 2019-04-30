@@ -134,7 +134,11 @@ parameters.
 
 If present the value of this parameter must be exactly `true` or `false`, with `false` as the default.
 
+### onlyPostParameters init-param
 
+The _optional_ init-param `onlyPostParameters` is a whitespace-delimited set of the names of
+request parameters the filter will allow only on POST type requests. The Filter will throw an
+exception when any of these parameters are present on requests of any other type.
 
 Configuration Examples
 ----------------------
@@ -153,7 +157,7 @@ Configuration Examples
 </filter-mapping>
 ```
 
-In this configuration, the Filter will scrutinize all request parameters, requiring that they not be multi-valued, and requiring that they not contain any of `% ? # &`.
+In this configuration, the Filter will scrutinize all request parameters, requiring that they not be multi-valued, requiring that they not contain any of `% ? # &`, and allowing request parameters regardless of whether the request is of type POST or not.
 
 ### Allow multi-valued parameters
 
@@ -222,6 +226,36 @@ Likewise, you could use this Filter in front of a CAS Server to prevent unexpect
 ```
 
 This approach has the advantage of only blocking specific CAS protocol parameters, so that if you were to map the Filter in front of say the services management UI you can block unexpectedly multi-valued CAS protocol parameters without blocking submission of the services management edit screen where multiple user attributes are selected for release to a service (a legitimate case of a multi-valued attribute).
+
+### Limiting specific request parameters to POST-type requests
+
+You could use this filter to restrict to only POST-type requests those request
+parameters that you expect only in POST-type requests.
+
+For example, suppose you have a HTML form that submits a form via POST with
+parameters `formFieldOne` and `formFieldTwo`. This configuration would block
+requests that include these parameters in other types of requests, for example
+in GET requests.
+
+```xml
+<filter>
+  <filter-name>requestParameterFilter</filter-name>
+  <filter-class>org.apereo.cas.security.RequestParameterPolicyEnforcementFilter</filter-class>
+  <init-param>
+    <param-name>onlyPostParameters</param-name>
+    <param-value>formFieldOne formFieldTwo</param-value>
+  </init-param>
+  <init-param>
+    <param-name>charactersToForbid</param-name>
+    <param-value>none</param-value>
+  </init-param>
+</filter>
+...
+<filter-mapping>
+  <filter-name>requestParameterFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+</filter-mapping>
+```
 
 ### An entirely novel configuration
 
