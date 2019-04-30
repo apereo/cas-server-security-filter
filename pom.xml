@@ -176,7 +176,7 @@
         <servlet.api.version>2.5</servlet.api.version>
         <junit.version>4.12</junit.version>
         <slf4j.version>1.7.26</slf4j.version>
-        <mockito.version>1.10.19</mockito.version>
+        <mockito.version>2.27.0</mockito.version>
         <project.build.sourceVersion>1.8</project.build.sourceVersion>
         <project.build.targetVersion>1.8</project.build.targetVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
