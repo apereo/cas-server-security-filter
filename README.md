@@ -123,7 +123,11 @@ parameters.
 
 If present the value of this parameter must be exactly `true` or `false`, with `false` as the default.
 
+### onlyPostParameters init-param
 
+The _optional_ init-param `onlyPostParameters` is a whitespace-delimited set of the names of
+request parameters the filter will allow only on POST type requests. The Filter will throw an
+exception when any of these parameters are present on requests of any other type.
 
 Configuration Examples
 ----------------------
@@ -142,7 +146,7 @@ Configuration Examples
 </filter-mapping>
 ```
 
-In this configuration, the Filter will scrutinize all request parameters, requiring that they not be multi-valued, and requiring that they not contain any of `% ? # &`.
+In this configuration, the Filter will scrutinize all request parameters, requiring that they not be multi-valued, requiring that they not contain any of `% ? # &`, and allowing request parameters regardless of whether the request is of type POST or not.
 
 ### Allow multi-valued parameters
 
