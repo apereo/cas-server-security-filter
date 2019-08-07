@@ -43,29 +43,45 @@ import java.util.logging.Logger;
  * and ampersand characters, and enforcing no-multi-valued-ness.
  * <p>
  * You can turn off multi-value checking by setting the init-param "allowMultiValuedParameters" to "true".  Setting it
- * to "false" is a no-op retaining the default configuration.  Setting this parameter to any other value fails filter
+ * to "false" is a no-op retaining the default configuration.  Setting this parameter to any other value may fail filter
  * initialization.
  * <p>
  * You can change the set of request parameters being examined by setting the init-param "parametersToCheck" to a
  * whitespace delimited list of parameters to check.  Setting it to the special value "*" retains the default
- * behavior of checking all.  Setting it to a blank value fails filter initialization.  Setting it to a String
- * containing the asterisk token and any additional token fails filter initialization.
+ * behavior of checking all.  Setting it to a blank value may fail filter initialization.  Setting it to a String
+ * containing the asterisk token and any additional token may fail filter initialization.
  * <p>
  * You can change the set of characters looked for by setting the init-param "charactersToForbid" to a whitespace
  * delimited list of characters to forbid.  Setting it to the special value "none" disables the illicit character
  * blocking feature of this Filter (for the case where you only want to use the mutli-valued-ness blocking).
- * Setting it to a blank value fails filter initialization.
+ * Setting it to a blank value may fail filter initialization.
  * Setting it to a value that fails to parse perfectly
  * (e.g., a value with multi-character Strings between the whitespace delimiters)
- * fails filter initialization.  The default set of characters disallowed is percent, hash, question mark,
+ * may fail filter initialization.  The default set of characters disallowed is percent, hash, question mark,
  * and ampersand.
+ * <p>
+ * You can limit a set of request parameters to only be allowed on requests of type POST by
+ * setting the init-param "onlyPostParameters" to a whitespace-delimited list of parameters.
+ * Unlike "parametersToCheck", this does not support the special value "*".
+ * Setting  "onlyPostParameters" to a blank value fails filter initialization.
+ * By default (when "onlyPostParameters" is not set), the filter does not limit request parameters
+ * to only POST requests.
+ * <p>
+ * You can set FilterUtils.throwOnErrors, and so whether configuration errors
+ * cause filter init to fail, by setting the init-param "failSafe". Setting
+ * failSafe to true makes configuration errors fatal thereby avoiding "unsafe"
+ * partially configured filter states. Setting failSafe to false sets
+ * FilterUtils.throwOnErrors to false (its default value).
+ * <p>
+ * NOTE: FilterUtils is a stateful static singleton service. Setting "failSafe"
+ * configures FilterUtils globally.
  * <p>
  * Setting any other init parameter other than these recognized by this Filter will fail Filter initialization.  This
  * is to protect the adopter from typos or misunderstandings in web.xml configuration such that an intended
  * configuration might not have taken effect, since that might have security implications.
  * <p>
  * Setting the Filter to both allow multi-valued parameters and to disallow no characters would make the Filter a
- * no-op, and so fails Filter initialization since you probably meant the Filter to be doing something.
+ * no-op, and so may fail filter initialization since you probably meant the Filter to be doing something.
  * <p>
  * The intent of this filter is rough, brute force blocking of unexpected characters in specific CAS protocol related
  * request parameters.  This is one option as a workaround for patching in place certain Java CAS Client versions that
@@ -76,8 +92,15 @@ import java.util.logging.Logger;
  * parameters.  It might come in handy the next time this kind of issue arises.
  * <p>
  * This Filter is written to have no external .jar dependencies aside from the Servlet API necessary to be a Filter.
- * <p>
- * This class is declared final because it is not designed for extension.
+ * <p>WARNING: Be sure that either FilterUtils throwOnErrors is set to true (not
+ * its default value) or that you are reliably monitoring logs for SEVERE level
+ * messages, so that you reliably notice if this filter is misconfigured. You
+ * can set FilterUtils throwOnErrors by setting the "failSafe" init-param on
+ * this filter. If FilterUtils throwOnErrors is false (its default value), this
+ * Filter can init in inconsistent configuration states. This is what is meant
+ * by "may fail filter initialization" above -- it'll fail only if FilterUtils
+ * throwOnError is true (not its default configuration), otherwise it will just
+ * log an exception.
  *
  * @since cas-security-filter 1.1
  */
@@ -115,6 +138,12 @@ public class RequestParameterPolicyEnforcementFilter extends AbstractSecurityFil
      * The name of the optional Filter init-param specifying what request parameters ought to be send via POST requests only.
      */
     public static final String ONLY_POST_PARAMETERS = "onlyPostParameters";
+
+    /**
+     * The name of the optional Filter init-param specifying that configuration
+     * errors should be fatal.
+     */
+    public static final String FAIL_SAFE = "failSafe";
 
     /**
      * Set of parameter names to check.
@@ -158,6 +187,26 @@ public class RequestParameterPolicyEnforcementFilter extends AbstractSecurityFil
         this.onlyPostParameters = onlyPostParameters;
     }
 
+    /**
+     * Configure whether the filter should fail safe. Fail safe in this context
+     * means failing to init rather than initing with a configuration that's
+     * ambiguous and so may not be providing the intended protections. Fail
+     * dangerous in this context means initing regardless of configuration
+     * errors, which won't prevent the servlet context from initing, but which
+     * might init a servlet context without the protections intended by
+     * declaring and mapping this filter.
+     * <p>
+     * NOTE: This sets the throwOnErrors property of static singleton service
+     * FilterUtils. This configuration is global for all uses of FilterUtils,
+     * e.g. for usages in other filters.
+     * @param failSafe
+     */
+    public void setFailSafe(boolean failSafe) {
+      // if configured to fail safe, make configuration errors fatal so that
+      // this filter will not init() with known-problematic configuration.
+      FilterUtils.setThrowOnErrors(failSafe);
+    }
+
     public RequestParameterPolicyEnforcementFilter() {
         FilterUtils.configureLogging(getLoggerHandlerClassName(), LOGGER);
     }
@@ -171,9 +220,18 @@ public class RequestParameterPolicyEnforcementFilter extends AbstractSecurityFil
     @Override
     public void init(final FilterConfig filterConfig) throws ServletException {
 
-        
+
             FilterUtils.configureLogging(getLoggerHandlerClassName(), LOGGER);
-        
+
+        // config failSafe first because specifies consequences of subsequent
+        // config errors
+        final String failSafeParam = filterConfig.getInitParameter(FAIL_SAFE);
+
+        if (null != failSafeParam) {
+          setFailSafe(
+            FilterUtils.parseStringToBooleanDefaultingToFalse(failSafeParam));
+        }
+
         // verify there are no init parameters configured that are not recognized
         // since an unrecognized init param might be the adopter trying to configure this filter in an important way
         // and accidentally ignoring that intent might have security implications.
@@ -287,6 +345,7 @@ public class RequestParameterPolicyEnforcementFilter extends AbstractSecurityFil
         recognizedParameterNames.add(PARAMETERS_TO_CHECK);
         recognizedParameterNames.add(ONLY_POST_PARAMETERS);
         recognizedParameterNames.add(CHARACTERS_TO_FORBID);
+        recognizedParameterNames.add(FAIL_SAFE);
         recognizedParameterNames.add(LOGGER_HANDLER_CLASS_NAME);
 
         while (initParamNames.hasMoreElements()) {

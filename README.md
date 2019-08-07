@@ -99,7 +99,18 @@ Configuration options
 
 This Filter is optionally configured via Filter `init-param` in `web.xml`.
 
-In general the Filter is very persnickety about init-params, such that if you give it a configuration that the Filter is not totally sure it understands, it will fail Filter initialization.
+In general the Filter is very persnickety about init-params, such that if you
+give it a configuration that the Filter is not totally sure it understands, it
+will log an exception.
+
+**WARNING**: By default bad filter configuration will NOT fail filter
+initialization, and so it is possible to inadvertently configure the filter to
+e.g. have no effect. You SHOULD either be sure to monitor the logs for the
+SEVERE messages that will be logged if this filter believes its configuration is
+problematic, or set `FilterUtils.throwOnErrors` to true so that bad filter
+config fails Filter init and so fails context init, guaranteeing that you do not
+bring up an application intending to protect it with this filter but not
+successfully doing so due to configuration errors the filter is aware of.
 
 ### parametersToCheck init-param
 
@@ -123,7 +134,11 @@ parameters.
 
 If present the value of this parameter must be exactly `true` or `false`, with `false` as the default.
 
+### onlyPostParameters init-param
 
+The _optional_ init-param `onlyPostParameters` is a whitespace-delimited set of the names of
+request parameters the filter will allow only on POST type requests. The Filter will throw an
+exception when any of these parameters are present on requests of any other type.
 
 Configuration Examples
 ----------------------
@@ -142,7 +157,32 @@ Configuration Examples
 </filter-mapping>
 ```
 
-In this configuration, the Filter will scrutinize all request parameters, requiring that they not be multi-valued, and requiring that they not contain any of `% ? # &`.
+In this configuration, the Filter will scrutinize all request parameters, requiring that they not be multi-valued, requiring that they not contain any of `% ? # &`, and allowing request parameters regardless of whether the request is of type POST or not.
+
+### Configuring to fail safely
+
+```xml
+<filter>
+  <filter-name>requestParameterFilter</filter-name>
+  <filter-class>org.apereo.cas.security.RequestParameterPolicyEnforcementFilter</filter-class>
+  <init-param>
+    <param-name>failSafe</param-name>
+    <param-value>true</param-value>
+  </init-param>
+</filter>
+...
+<filter-mapping>
+  <filter-name>requestParameterFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+</filter-mapping>
+ ```
+
+ In this configuration, the Filter will fail filter initialization if there are
+ any configuration errors. There are not configuration errors here, so it will
+ not so fail. But this makes a safer starting point from which to add other
+ configuration, since if the filter detects errors in any of that additional
+ configuration, filter init will fail rather than the context initing with the
+ filter not providing the protection that you may have intended it to provide.
 
 ### Allow multi-valued parameters
 
@@ -211,6 +251,36 @@ Likewise, you could use this Filter in front of a CAS Server to prevent unexpect
 ```
 
 This approach has the advantage of only blocking specific CAS protocol parameters, so that if you were to map the Filter in front of say the services management UI you can block unexpectedly multi-valued CAS protocol parameters without blocking submission of the services management edit screen where multiple user attributes are selected for release to a service (a legitimate case of a multi-valued attribute).
+
+### Limiting specific request parameters to POST-type requests
+
+You could use this filter to restrict to only POST-type requests those request
+parameters that you expect only in POST-type requests.
+
+For example, suppose you have a HTML form that submits a form via POST with
+parameters `formFieldOne` and `formFieldTwo`. This configuration would block
+requests that include these parameters in other types of requests, for example
+in GET requests.
+
+```xml
+<filter>
+  <filter-name>requestParameterFilter</filter-name>
+  <filter-class>org.apereo.cas.security.RequestParameterPolicyEnforcementFilter</filter-class>
+  <init-param>
+    <param-name>onlyPostParameters</param-name>
+    <param-value>formFieldOne formFieldTwo</param-value>
+  </init-param>
+  <init-param>
+    <param-name>charactersToForbid</param-name>
+    <param-value>none</param-value>
+  </init-param>
+</filter>
+...
+<filter-mapping>
+  <filter-name>requestParameterFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+</filter-mapping>
+```
 
 ### An entirely novel configuration
 
