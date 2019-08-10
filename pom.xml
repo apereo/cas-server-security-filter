@@ -175,7 +175,7 @@
     <properties>
         <servlet.api.version>2.5</servlet.api.version>
         <junit.version>4.12</junit.version>
-        <slf4j.version>1.7.27</slf4j.version>
+        <slf4j.version>1.7.28</slf4j.version>
         <mockito.version>3.0.0</mockito.version>
         <project.build.sourceVersion>1.8</project.build.sourceVersion>
         <project.build.targetVersion>1.8</project.build.targetVersion>
